@@ -7,8 +7,11 @@ const App = () => {
   const [vehicles, setVehicles] = useState([]); // this Fun store all vehicles from the backend
   const [showVehicleList, setShowVehicleList] = useState(false); // shows the data of vehciles
   const [showAddVehicleForm, setShowAddVehicleForm] = useState(false); // Add Vehicle form
-
   const [editVehicleId, setEditVehicleId] = useState(null); // Stores the ID of the vehicle being edited
+
+  const [renewalVehicles, setRenewalVehicles] = useState([]); // this Fun store all vehicles from the backend
+  const [showRenewalForm, setShowRenewalForm] = useState(false); // renewal Vehicle form
+  const [showRenewalVehicleList, setShowRenewalVehicleList] = useState(false); // shows the data of renewal vehciles
 
   const [vehicleInfo, setVehicleInfo] = useState({
     Vehiclenumber: "",
@@ -19,6 +22,12 @@ const App = () => {
     FuelType: "",
     year: "",
     mileage: "",
+  });
+  const [vehicleRenewal, setVehicleRenewal] = useState({
+    vehiclenumber: "",
+    renewalfor: "",
+    Issuedate: "",
+    Expirydate: "",
   });
 
   const vehicleTypes = ["Car", "Truck", "Bike"];
@@ -79,6 +88,40 @@ const App = () => {
     }
   };
 
+  const handleRenewalInputChange = (e) => {
+    const { name, value } = e.target;
+    setVehicleRenewal({ ...vehicleRenewal, [name]: value });
+  };
+
+  const handleRenewalVehicle = async () => {
+    if (
+      !vehicleRenewal.vehiclenumber ||
+      !vehicleRenewal.renewalfor ||
+      !vehicleRenewal.Issuedate ||
+      !vehicleRenewal.Expirydate
+    ) {
+      alert("Please fill out all fields before adding the vehicle renewal.");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/renewals", // Assuming you have a separate API endpoint for renewals
+        vehicleRenewal
+      );
+      setRenewalVehicles([...renewalVehicles, response.data]); // Update the renewal vehicles list
+      alert("Vehicle Renewal added successfully!");
+      setVehicleRenewal({
+        vehiclenumber: "",
+        renewalfor: "",
+        Issuedate: "",
+        Expirydate: "",
+      });
+    } catch (error) {
+      console.error("Error adding vehicle renewal:", error.message);
+      alert("Failed to add vehicle renewal.");
+    }
+  };
+
   const handleUpdateVehicle = async () => {
     if (!editVehicleId) return;
 
@@ -93,7 +136,7 @@ const App = () => {
         )
       );
 
-      // this is for Updated the vehicle in the list
+      // this is for Update the vehicle in the list
       alert("Vehicle updated successfully!");
       setEditVehicleId(null);
       setVehicleInfo({
@@ -128,6 +171,8 @@ const App = () => {
     setVehicleInfo(vehicle); // existing data
     setShowAddVehicleForm(true);
     setShowVehicleList(false);
+    setShowRenewalForm(false);
+    setShowRenewalVehicleList(false);
   };
 
   return (
@@ -136,11 +181,12 @@ const App = () => {
         <h2 className="text-lg font-bold">Home</h2>
         <ul className="mt-4 text-font-semibold">
           <MenuItem
-           
             label="Add Vehicle"
             onClick={() => {
               setShowAddVehicleForm(true);
               setShowVehicleList(false);
+              setShowRenewalForm(false);
+              setShowRenewalVehicleList(false);
               setEditVehicleId(null);
               setVehicleInfo({
                 Vehiclenumber: "",
@@ -154,17 +200,33 @@ const App = () => {
               });
             }}
           />
+          <MenuItem
+            label="Renewal Vehicles"
+            onClick={() => {
+              setShowAddVehicleForm(false);
+              setShowVehicleList(false);
+              setShowRenewalForm(true);
+              setShowRenewalVehicleList(false);
+              setEditVehicleId(null);
+              setVehicleRenewal({
+                vehiclenumber: "",
+                renewalfor: "",
+                Issuedate: "",
+                Expirydate: "",
+              });
+            }}
+          />
         </ul>
       </aside>
 
-      <main className="flex-1 bg-">
-        <header className="bg-skyBlue text-white p-6 shadow-md flex items-center justify-between relative">
+      <main className="flex-1 bg-gray-100">
+        <header className="bg-TealBlue text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
 
         {showAddVehicleForm && (
           <div className="p-6">
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
+            <div className="flex items-center justify-between px-4 py-2 bg-white border-b"> {/* Changed bg-gray-100 to bg-white */}
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 {editVehicleId
                   ? "Edit Vehicle Information"
@@ -173,9 +235,11 @@ const App = () => {
               <button
                 onClick={() => {
                   setShowAddVehicleForm(false);
+                  setShowRenewalForm(false);
+                  setShowRenewalVehicleList(false);
                   setShowVehicleList(true);
                 }}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue transition"
+                className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
               >
                 Vehicle List
               </button>
@@ -324,6 +388,105 @@ const App = () => {
               handleEditVehicle={handleEditVehicle}
               handleDeleteVehicle={handleDeleteVehicle}
             />
+          </div>
+        )}
+
+        {showRenewalForm && (
+          <div className="p-6">
+            <div className="flex items-center justify-between px-4 py-2 bg-white border-b"> {/* Changed bg-gray-100 to bg-white */}
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Renewal Vehicle Information
+              </h2>
+              <button
+                onClick={() => {
+                  setShowAddVehicleForm(false);
+                  setShowRenewalForm(false);
+                  setShowRenewalVehicleList(false);
+                  setShowVehicleList(false);
+                }}
+                className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
+              >
+                Renewal List
+              </button>
+            </div>
+            <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg">
+              <div>
+                <label className="block font-semibold mb-2 text-gray-600">
+                  Vehicle Number
+                </label>
+                <input
+                  type="text"
+                  name="vehiclenumber"
+                  value={vehicleRenewal.vehiclenumber}
+                  onChange={handleRenewalInputChange}
+                  placeholder="Vehicle Number"
+                  required
+                  className="border border-gray-300 rounded w-full p-2"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2 text-gray-600">
+                  Renewal For
+                </label>
+                <input
+                  type="text"
+                  name="renewalfor"
+                  value={vehicleRenewal.renewalfor}
+                  onChange={handleRenewalInputChange}
+                  placeholder="Renewal For"
+                  required
+                  className="border border-gray-300 rounded w-full p-2"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2 text-gray-600">
+                  Issue Date
+                </label>
+                <input
+                  type="date"
+                  name="Issuedate"
+                  value={vehicleRenewal.Issuedate}
+                  onChange={handleRenewalInputChange}
+                  required
+                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2 text-gray-600">
+                  Expiry Date
+                </label>
+                <input
+                  type="date"
+                  name="Expirydate"
+                  value={vehicleRenewal.Expirydate}
+                  onChange={handleRenewalInputChange}
+                  required
+                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRenewalVehicle}
+                className="mt-4 bg-blue text-white px-6 py-2 rounded shadow-md hover:bg-blue"
+              >
+                Add Vehicle Renewal
+              </button>
+            </form>
+          </div>
+        )}
+         {showRenewalVehicleList && (
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              All Vehicle Renewals
+            </h2>
+            {renewalVehicles.length > 0 ? (
+              <Card renewalVehicles={renewalVehicles} />
+            ) : (
+              <p>No vehicle renewals available.</p>
+            )}
           </div>
         )}
       </main>
