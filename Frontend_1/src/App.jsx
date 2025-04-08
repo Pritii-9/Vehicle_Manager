@@ -2,16 +2,18 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import MenuItem from "./Components/MenuItem";
 import Card from "./Components/Card";
+import VehicleMgt from "./Components/vehicle/VehicleMgt";
+import RenewalMgt from "./Components/vehicle/RenewalMgt";
 
 const App = () => {
-  const [vehicles, setVehicles] = useState([]); // this Fun store all vehicles from the backend
-  const [showVehicleList, setShowVehicleList] = useState(false); // shows the data of vehciles
-  const [showAddVehicleForm, setShowAddVehicleForm] = useState(false); // Add Vehicle form
-  const [editVehicleId, setEditVehicleId] = useState(null); // Stores the ID of the vehicle being edited
+  const [vehicles, setVehicles] = useState([]);
+  const [showVehicleList, setShowVehicleList] = useState(false);
+  const [showAddVehicleForm, setShowAddVehicleForm] = useState(false);
+  const [editVehicleId, setEditVehicleId] = useState(null);
 
-  const [renewalVehicles, setRenewalVehicles] = useState([]); // this Fun store all vehicles from the backend
-  const [showRenewalForm, setShowRenewalForm] = useState(false); // renewal Vehicle form
-  const [showRenewalVehicleList, setShowRenewalVehicleList] = useState(false); // shows the data of renewal vehciles
+  const [renewalVehicles, setRenewalVehicles] = useState([]);
+  const [showRenewalForm, setShowRenewalForm] = useState(false);
+  const [showRenewalVehicleList, setShowRenewalVehicleList] = useState(false);
 
   const [vehicleInfo, setVehicleInfo] = useState({
     Vehiclenumber: "",
@@ -34,15 +36,40 @@ const App = () => {
 
   const fetchVehicles = async () => {
     try {
+      console.log("Fetching vehicles from http://localhost:5000/api/vehicles");
       const response = await axios.get("http://localhost:5000/api/vehicles");
-      setVehicles(response.data); // Fetch and store vehicles
+      console.log("Response from /api/vehicles:", response);
+      setVehicles(response.data);
     } catch (error) {
-      console.error("Error fetching vehicles:", error.message);
+      console.error("Error fetching vehicles:", error);
+      if (error.response) {
+        console.error("Vehicle API Response Data:", error.response.data);
+        console.error("Vehicle API Response Status:", error.response.status);
+      }
+      alert("Failed to fetch vehicles. Check the console for details.");
+    }
+  };
+
+  const fetchRenewals = async () => {
+    try {
+      console.log("Fetching renewals from http://localhost:5000/api/renewals");
+      const response = await axios.get("http://localhost:5000/api/renewals");
+      console.log("Response from /api/renewals:", response);
+
+      setRenewalVehicles(response.data);
+    } catch (error) {
+      console.error("Error fetching renewals:", error);
+      if (error.response) {
+        console.error("Renewal API Response Data:", error.response.data);
+        console.error("Renewal API Response Status:", error.response.status);
+      }
+      alert("Failed to fetch renewals. Check the console for details.");
     }
   };
 
   useEffect(() => {
-    fetchVehicles(); // Fetch vehicles on component mount
+    fetchVehicles();
+    fetchRenewals();
   }, []);
 
   const handleInputChange = (e) => {
@@ -66,11 +93,13 @@ const App = () => {
     }
 
     try {
+      console.log("Vehicle Info to Post:", vehicleInfo);
       const response = await axios.post(
         "http://localhost:5000/api/vehicles",
         vehicleInfo
       );
-      setVehicles([...vehicles, response.data]); // Update the vehicles list
+      console.log("Response from add vehicle:", response);
+      setVehicles([...vehicles, response.data]);
       alert("Vehicle added successfully!");
       setVehicleInfo({
         Vehiclenumber: "",
@@ -82,10 +111,82 @@ const App = () => {
         year: "",
         mileage: "",
       });
+      setShowAddVehicleForm(false); // Hide form after successful submission
+      setShowVehicleList(true);
     } catch (error) {
-      console.error("Error adding vehicle:", error.message);
-      alert("Failed to add vehicle.");
+      console.error("Error adding vehicle:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to add vehicle. Check console for details.");
     }
+  };
+
+  const handleUpdateVehicle = async () => {
+    if (!editVehicleId) return;
+
+    try {
+      console.log("Vehicle Info to Update:", vehicleInfo);
+      const response = await axios.put(
+        `http://localhost:5000/api/vehicles/${editVehicleId}`,
+        vehicleInfo
+      );
+      console.log("Response from update vehicle:", response);
+      setVehicles(
+        vehicles.map((vehicle) =>
+          vehicle._id === editVehicleId ? response.data : vehicle
+        )
+      );
+
+      alert("Vehicle updated successfully!");
+      setEditVehicleId(null);
+      setVehicleInfo({
+        Vehiclenumber: "",
+        OwnerName: "",
+        VehicleName: "",
+        VehicleType: "",
+        capacity: "",
+        FuelType: "",
+        year: "",
+        mileage: "",
+      });
+      setShowAddVehicleForm(false); // Hide form
+      setShowVehicleList(true);
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to update vehicle.");
+    }
+  };
+
+  const handleDeleteVehicle = async (id) => {
+    try {
+      console.log("Deleting vehicle with ID:", id);
+      await axios.delete(`http://localhost:5000/api/vehicles/${id}`);
+      setVehicles(vehicles.filter((vehicle) => vehicle._id !== id));
+      alert("Vehicle deleted successfully!");
+      setShowVehicleList(true);
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to delete vehicle.");
+    }
+  };
+
+  const handleEditVehicle = (vehicle) => {
+    setEditVehicleId(vehicle._id);
+    setVehicleInfo(vehicle);
+    setShowAddVehicleForm(true);
+    setShowVehicleList(false);
+    setShowRenewalForm(false);
+    setShowRenewalVehicleList(false);
   };
 
   const handleRenewalInputChange = (e) => {
@@ -104,11 +205,13 @@ const App = () => {
       return;
     }
     try {
+      console.log("Renewal Info to Post:", vehicleRenewal);
       const response = await axios.post(
-        "http://localhost:5000/api/renewals", // Assuming you have a separate API endpoint for renewals
+        "http://localhost:5000/api/renewals",
         vehicleRenewal
       );
-      setRenewalVehicles([...renewalVehicles, response.data]); // Update the renewal vehicles list
+      console.log("Response from add renewal:", response);
+      setRenewalVehicles([...renewalVehicles, response.data]);
       alert("Vehicle Renewal added successfully!");
       setVehicleRenewal({
         vehiclenumber: "",
@@ -116,63 +219,16 @@ const App = () => {
         Issuedate: "",
         Expirydate: "",
       });
+      setShowRenewalForm(false);
+      setShowRenewalVehicleList(true);
     } catch (error) {
-      console.error("Error adding vehicle renewal:", error.message);
+      console.error("Error adding vehicle renewal:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
       alert("Failed to add vehicle renewal.");
     }
-  };
-
-  const handleUpdateVehicle = async () => {
-    if (!editVehicleId) return;
-
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/api/vehicles/${editVehicleId}`,
-        vehicleInfo
-      );
-      setVehicles(
-        vehicles.map((vehicle) =>
-          vehicle._id === editVehicleId ? response.data : vehicle
-        )
-      );
-
-      // this is for Update the vehicle in the list
-      alert("Vehicle updated successfully!");
-      setEditVehicleId(null);
-      setVehicleInfo({
-        Vehiclenumber: "",
-        OwnerName: "",
-        VehicleName: "",
-        VehicleType: "",
-        capacity: "",
-        FuelType: "",
-        year: "",
-        mileage: "",
-      });
-    } catch (error) {
-      console.error("Error updating vehicle:", error.message);
-      alert("Failed to update vehicle.");
-    }
-  };
-
-  const handleDeleteVehicle = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/vehicles/${id}`);
-      setVehicles(vehicles.filter((vehicle) => vehicle._id !== id)); // Remove the deleted vehicle from the list
-      alert("Vehicle deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting vehicle:", error.message);
-      alert("Failed to delete vehicle.");
-    }
-  };
-
-  const handleEditVehicle = (vehicle) => {
-    setEditVehicleId(vehicle._id);
-    setVehicleInfo(vehicle); // existing data
-    setShowAddVehicleForm(true);
-    setShowVehicleList(false);
-    setShowRenewalForm(false);
-    setShowRenewalVehicleList(false);
   };
 
   return (
@@ -200,8 +256,9 @@ const App = () => {
               });
             }}
           />
+        
           <MenuItem
-            label="Renewal Vehicles"
+            label="Add Renewal"
             onClick={() => {
               setShowAddVehicleForm(false);
               setShowVehicleList(false);
@@ -216,6 +273,7 @@ const App = () => {
               });
             }}
           />
+         
         </ul>
       </aside>
 
@@ -225,264 +283,63 @@ const App = () => {
         </header>
 
         {showAddVehicleForm && (
-          <div className="p-6">
-            <div className="flex items-center justify-between px-4 py-2 bg-white border-b"> {/* Changed bg-gray-100 to bg-white */}
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                {editVehicleId
-                  ? "Edit Vehicle Information"
-                  : "Add Vehicle Information"}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowAddVehicleForm(false);
-                  setShowRenewalForm(false);
-                  setShowRenewalVehicleList(false);
-                  setShowVehicleList(true);
-                }}
-                className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
-              >
-                Vehicle List
-              </button>
-            </div>
-            <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg">
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Vehicle Number
-                </label>
-                <input
-                  type="text"
-                  name="Vehiclenumber"
-                  value={vehicleInfo.Vehiclenumber}
-                  onChange={handleInputChange}
-                  placeholder="Vehicle Number"
-                  required
-                  className="border border-gray-300 rounded w-full p-2"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Owner Name
-                </label>
-                <input
-                  type="text"
-                  name="OwnerName"
-                  value={vehicleInfo.OwnerName}
-                  onChange={handleInputChange}
-                  placeholder="Owner Name"
-                  className="border border-gray-300 rounded w-full p-2"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Vehicle Name
-                </label>
-                <input
-                  type="text"
-                  name="VehicleName"
-                  value={vehicleInfo.VehicleName}
-                  onChange={handleInputChange}
-                  placeholder="Vehicle Name"
-                  className="border border-gray-300 rounded w-full p-2"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Vehicle Type
-                </label>
-                <select
-                  name="VehicleType"
-                  value={vehicleInfo.VehicleType}
-                  onChange={handleInputChange}
-                  required
-                  className="border border-gray-300 rounded w-full p-2"
-                >
-                  <option value="">Select Vehicle Type</option>
-                  {vehicleTypes.map((type, index) => (
-                    <option key={index} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Capacity
-                </label>
-                <input
-                  type="text"
-                  name="capacity"
-                  value={vehicleInfo.capacity}
-                  onChange={handleInputChange}
-                  placeholder="Enter Capacity of Vehicle"
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Fuel-Type
-                </label>
-                <select
-                  name="FuelType"
-                  value={vehicleInfo.FuelType}
-                  onChange={handleInputChange}
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                >
-                  <option value="">Select Fuel Type</option>
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="Electric">Electric</option>
-                  <option value="Hybrid">Hybrid</option>
-                  <option value="CNG">CNG</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Year
-                </label>
-                <input
-                  type="number"
-                  name="year"
-                  value={vehicleInfo.year}
-                  onChange={handleInputChange}
-                  placeholder="Enter Manufacturing Year"
-                  required
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Mileage
-                </label>
-                <input
-                  type="number"
-                  name="mileage"
-                  value={vehicleInfo.mileage}
-                  onChange={handleInputChange}
-                  placeholder="Enter Mileage in km"
-                  required
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={editVehicleId ? handleUpdateVehicle : handleAddVehicle}
-                className="mt-4 bg-blue text-white px-6 py-2 rounded shadow-md hover:bg-blue"
-              >
-                {editVehicleId ? "Update Vehicle" : "Add Vehicle"}
-              </button>
-            </form>
-          </div>
+          <VehicleMgt
+            vehicleInfo={vehicleInfo}
+            handleInputChange={handleInputChange}
+            editVehicleId={editVehicleId}
+            handleAddVehicle={handleAddVehicle}
+            handleUpdateVehicle={handleUpdateVehicle}
+            vehicleTypes={vehicleTypes}
+            setShowAddVehicleForm={setShowAddVehicleForm}
+            setShowRenewalForm={setShowRenewalForm}
+            setShowRenewalVehicleList={setShowRenewalVehicleList}
+            setShowVehicleList={setShowVehicleList}
+            setShowVehicles={setVehicles}
+            setShowRenewalVehicles={setRenewalVehicles}
+          />
         )}
 
         {showVehicleList && (
           <div className="p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              All Vehicles
-            </h2>
-            <Card
-              vehicles={vehicles}
-              handleEditVehicle={handleEditVehicle}
-              handleDeleteVehicle={handleDeleteVehicle}
-            />
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                All Vehicles
+              </h2>
+            </div>
+            {vehicles.length > 0 ? ( //check for empty vehicles array
+              <Card
+                vehicles={vehicles}
+                handleEditVehicle={handleEditVehicle}
+                handleDeleteVehicle={handleDeleteVehicle}
+              />
+            ) : (
+              <p>No vehicles available.</p>
+            )}
           </div>
         )}
 
         {showRenewalForm && (
-          <div className="p-6">
-            <div className="flex items-center justify-between px-4 py-2 bg-white border-b"> {/* Changed bg-gray-100 to bg-white */}
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Renewal Vehicle Information
-              </h2>
-              <button
-                onClick={() => {
-                  setShowAddVehicleForm(false);
-                  setShowRenewalForm(false);
-                  setShowRenewalVehicleList(false);
-                  setShowVehicleList(false);
-                }}
-                className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
-              >
-                Renewal List
-              </button>
-            </div>
-            <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg">
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Vehicle Number
-                </label>
-                <input
-                  type="text"
-                  name="vehiclenumber"
-                  value={vehicleRenewal.vehiclenumber}
-                  onChange={handleRenewalInputChange}
-                  placeholder="Vehicle Number"
-                  required
-                  className="border border-gray-300 rounded w-full p-2"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Renewal For
-                </label>
-                <input
-                  type="text"
-                  name="renewalfor"
-                  value={vehicleRenewal.renewalfor}
-                  onChange={handleRenewalInputChange}
-                  placeholder="Renewal For"
-                  required
-                  className="border border-gray-300 rounded w-full p-2"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Issue Date
-                </label>
-                <input
-                  type="date"
-                  name="Issuedate"
-                  value={vehicleRenewal.Issuedate}
-                  onChange={handleRenewalInputChange}
-                  required
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-2 text-gray-600">
-                  Expiry Date
-                </label>
-                <input
-                  type="date"
-                  name="Expirydate"
-                  value={vehicleRenewal.Expirydate}
-                  onChange={handleRenewalInputChange}
-                  required
-                  className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleRenewalVehicle}
-                className="mt-4 bg-blue text-white px-6 py-2 rounded shadow-md hover:bg-blue"
-              >
-                Add Vehicle Renewal
-              </button>
-            </form>
-          </div>
+          <RenewalMgt
+            vehicleRenewal={vehicleRenewal}
+            handleRenewalInputChange={handleRenewalInputChange}
+            handleRenewalVehicle={handleRenewalVehicle}
+            setShowAddVehicleForm={setShowAddVehicleForm}
+            setShowRenewalForm={setShowRenewalForm}
+            setShowRenewalVehicleList={setShowRenewalVehicleList}
+            setShowVehicleList={setShowVehicleList}
+            setShowVehicles={setVehicles}
+            setShowRenewalVehicles={setRenewalVehicles}
+          />
         )}
-         {showRenewalVehicleList && (
+
+        {showRenewalVehicleList && (
           <div className="p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              All Vehicle Renewals
-            </h2>
-            {renewalVehicles.length > 0 ? (
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                All Vehicle Renewals
+              </h2>
+            </div>
+            {renewalVehicles.length > 0 ? ( // Check for empty array
               <Card renewalVehicles={renewalVehicles} />
             ) : (
               <p>No vehicle renewals available.</p>
@@ -495,3 +352,4 @@ const App = () => {
 };
 
 export default App;
+
