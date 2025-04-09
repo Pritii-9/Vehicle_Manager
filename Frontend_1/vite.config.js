@@ -11,11 +11,11 @@ export default defineConfig({
     "./src/**/*.{js,ts,tsx,jsx}",
   ],
   theme:{
-    extend:{
-      blue:"#5046e4",
-      skyBlue:"#3B82F6 ",
+    // extend:{
+    //   blue:"#5046e4",
+    //   skyBlue:"#3B82F6 ",
       
-    }
+    // }
   },
   plugins: [react(),tailwindcss()],
 })

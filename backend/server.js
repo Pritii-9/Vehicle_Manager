@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import renewalRoutes from "./routes/renewalRoutes.js"; // Import renewal routes
+import logSheetRoutes from "./routes/logSheetRoutes.js"; 
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ mongoose
 
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/renewals", renewalRoutes); // Use renewal routes
-
+app.use("/api/logsheet", logSheetRoutes); // Use log sheet routes
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
