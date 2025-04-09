@@ -151,7 +151,7 @@ const App = () => {
         year: "",
         mileage: "",
       });
-      setShowAddVehicleForm(false); // Hide form
+      setShowAddVehicleForm(false); 
       setShowVehicleList(true);
     } catch (error) {
       console.error("Error updating vehicle:", error);
@@ -278,7 +278,7 @@ const App = () => {
       </aside>
 
       <main className="flex-1 bg-gray-100">
-        <header className="bg-TealBlue text-white p-6 shadow-md flex items-center justify-between relative">
+        <header className="bg-[#2979ff] text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
 

@@ -30,12 +30,12 @@ const RenewalMgt = ({
       return;
     }
     try {
-      console.log("Data to be sent:", vehicleRenewal); // 1. Log data before sending
+      console.log("Data to be sent:", vehicleRenewal); 
       const response = await axios.post(
-        "http://localhost:5000/api/renewals", // Ensure this URL is correct
+        "http://localhost:5000/api/renewals", 
         vehicleRenewal
       );
-      console.log("Response from server:", response); // 2. Log the *entire* response
+      console.log("Response from server:", response); 
       alert("Vehicle Renewal added successfully!");
       setVehicleRenewal({
         vehiclenumber: "",
@@ -43,19 +43,10 @@ const RenewalMgt = ({
         Issuedate: "",
         Expirydate: "",
       });
-      setShowRenewalForm(false); // Hide form on success
+      setShowRenewalForm(false); 
       setShowRenewalVehicleList(true);
     } catch (error) {
-      console.error("Error adding vehicle renewal:", error); // 3. Log the *entire* error
-      if (error.response) {
-        console.error("Server response data:", error.response.data); // 4. Log response data
-        console.error("Server response status:", error.response.status); // 5. Log response status
-        console.error("Server response headers:", error.response.headers); // 6. Log response headers
-      } else if (error.request) {
-        console.error("Request error:", error.request); // 7. Log request error
-      } else {
-        console.error("Error message:", error.message); // 8. Log error message
-      }
+      console.error("Error adding vehicle renewal:", error); 
       alert("Failed to add vehicle renewal.  See console for details.");
     }
   };
@@ -71,7 +62,7 @@ const RenewalMgt = ({
             setShowRenewalVehicleList(true);
             setShowVehicleList(false);
           }}
-          className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
+          className="bg-[#5046e4] text-white px-4 py-2 rounded hover:bg-blue transition"
         >
           Renewal List
         </button>
@@ -135,7 +126,7 @@ const RenewalMgt = ({
         <button
           type="button"
           onClick={handleRenewalVehicle}
-          className="mt-4 bg-blue text-white px-6 py-2 rounded shadow-md hover:bg-blue"
+          className="mt-4 bg-[#5046e4] text-white px-6 py-2 rounded shadow-md hover:bg-blue"
         >
           Add Renewal
         </button>
