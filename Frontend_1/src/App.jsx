@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import MenuItem from "./Components/MenuItem";
 import Card from "./Components/Card";
 import VehicleMgt from "./Components/vehicle/VehicleMgt";
 import RenewalMgt from "./Components/vehicle/RenewalMgt";
+import LogSheets from "./Components/vehicle/logSheets";
+import Sidebar from "./Components/Sidebar";
+import Home from "./Components/pages/Home";
 
 const App = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -14,6 +16,110 @@ const App = () => {
   const [renewalVehicles, setRenewalVehicles] = useState([]);
   const [showRenewalForm, setShowRenewalForm] = useState(false);
   const [showRenewalVehicleList, setShowRenewalVehicleList] = useState(false);
+
+  const [showLogSheetForm, setShowLogSheetForm] = useState(false);
+  const [showLogSheetList, setShowLogSheetList] = useState(false);
+  const [editLogSheetId, setEditLogSheetId] = useState(null);
+  const [logSheets, setLogSheets] = useState([]);
+  const [showHome, setShowHome] = useState(true); 
+
+  const [logSheetInfo, setLogSheetInfo] = useState({
+    // Define the fields for your log sheet form here
+    vehicleNumber: "",
+    date: "",
+    driverName: "",
+    startMileage: "",
+    endMileage: "",
+    // ... other log sheet fields
+  });
+
+  useEffect(() => {
+    fetchVehicles();
+    fetchRenewals();
+    fetchLogSheets();
+  }, []);
+
+  const fetchLogSheets = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/logsheet");
+      setLogSheets(response.data);
+    } catch (error) {
+      console.error("Error fetching log sheets:", error);
+      alert("Failed to fetch log sheets.");
+    }
+  };
+
+  const handleLogSheetInputChange = (e) => {
+    const { name, value } = e.target;
+    setLogSheetInfo({ ...logSheetInfo, [name]: value });
+  };
+
+  const handleAddLogSheet = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/logsheet", logSheetInfo);
+      setLogSheets([...logSheets, response.data]);
+      setLogSheetInfo({
+        vehicleNumber: "",
+        CustomerName: "",
+        Location: "",
+        OpeningReading: "",
+        ClosingReading: "",
+        Total: "",
+        Driver: "",
+        DieselQuantity: "",
+        DieselAmount: "",
+        Remark: "",
+      });
+      setShowLogSheetForm(false);
+      setShowLogSheetList(true);
+      alert("Log sheet added successfully!");
+    } catch (error) {
+     console.error("Error adding log sheet:", error);
+     alert("Failed to add log sheet.");
+    }
+  };
+
+  const handleUpdateLogSheet = async () => {
+    if (!editLogSheetId) return;
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/logsheet/${editLogSheetId}`,
+        logSheetInfo
+      );
+      setLogSheets(
+        logSheets.map((ls) => (ls._id === editLogSheetId ? response.data : ls))
+      );
+      setEditLogSheetId(null);
+      setLogSheetInfo({
+        vehicleNumber: "",
+        
+      });
+      setShowLogSheetForm(false);
+      setShowLogSheetList(true);
+      alert("Log sheet updated successfully!");
+    } catch (error) {
+      console.error("Error updating log sheet:", error);
+      alert("Failed to update log sheet.");
+    }
+  };
+
+  const handleEditLogSheet = (logSheet) => {
+    setEditLogSheetId(logSheet._id);
+    setLogSheetInfo(logSheet);
+    setShowLogSheetForm(true);
+    setShowLogSheetList(false);
+  };
+
+  const handleDeleteLogSheet = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/logsheet/${id}`);
+      setLogSheets(logSheets.filter((ls) => ls._id !== id));
+      alert("Log sheet deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting log sheet:", error);
+     alert("Failed to delete log sheet.");
+    }
+  };
 
   const [vehicleInfo, setVehicleInfo] = useState({
     Vehiclenumber: "",
@@ -46,7 +152,7 @@ const App = () => {
         console.error("Vehicle API Response Data:", error.response.data);
         console.error("Vehicle API Response Status:", error.response.status);
       }
-      alert("Failed to fetch vehicles. Check the console for details.");
+     alert("Failed to fetch vehicles. Check the console for details.");
     }
   };
 
@@ -55,7 +161,6 @@ const App = () => {
       console.log("Fetching renewals from http://localhost:5000/api/renewals");
       const response = await axios.get("http://localhost:5000/api/renewals");
       console.log("Response from /api/renewals:", response);
-
       setRenewalVehicles(response.data);
     } catch (error) {
       console.error("Error fetching renewals:", error);
@@ -63,7 +168,7 @@ const App = () => {
         console.error("Renewal API Response Data:", error.response.data);
         console.error("Renewal API Response Status:", error.response.status);
       }
-      alert("Failed to fetch renewals. Check the console for details.");
+     alert("Failed to fetch renewals. Check the console for details.");
     }
   };
 
@@ -111,7 +216,7 @@ const App = () => {
         year: "",
         mileage: "",
       });
-      setShowAddVehicleForm(false); // Hide form after successful submission
+      setShowAddVehicleForm(false);
       setShowVehicleList(true);
     } catch (error) {
       console.error("Error adding vehicle:", error);
@@ -151,7 +256,7 @@ const App = () => {
         year: "",
         mileage: "",
       });
-      setShowAddVehicleForm(false); // Hide form
+      setShowAddVehicleForm(false);
       setShowVehicleList(true);
     } catch (error) {
       console.error("Error updating vehicle:", error);
@@ -187,6 +292,7 @@ const App = () => {
     setShowVehicleList(false);
     setShowRenewalForm(false);
     setShowRenewalVehicleList(false);
+    
   };
 
   const handleRenewalInputChange = (e) => {
@@ -233,57 +339,28 @@ const App = () => {
 
   return (
     <div className="flex h-screen">
-      <aside className="w-1/4 bg-white text-black-800 p-4 h-screen flex-shrink-0">
-        <h2 className="text-lg font-bold">Home</h2>
-        <ul className="mt-4 text-font-semibold">
-          <MenuItem
-            label="Add Vehicle"
-            onClick={() => {
-              setShowAddVehicleForm(true);
-              setShowVehicleList(false);
-              setShowRenewalForm(false);
-              setShowRenewalVehicleList(false);
-              setEditVehicleId(null);
-              setVehicleInfo({
-                Vehiclenumber: "",
-                OwnerName: "",
-                VehicleName: "",
-                VehicleType: "",
-                capacity: "",
-                FuelType: "",
-                year: "",
-                mileage: "",
-              });
-            }}
-          />
-        
-          <MenuItem
-            label="Add Renewal"
-            onClick={() => {
-              setShowAddVehicleForm(false);
-              setShowVehicleList(false);
-              setShowRenewalForm(true);
-              setShowRenewalVehicleList(false);
-              setEditVehicleId(null);
-              setVehicleRenewal({
-                vehiclenumber: "",
-                renewalfor: "",
-                Issuedate: "",
-                Expirydate: "",
-              });
-            }}
-          />
+      <Sidebar
+      setShowHome={setShowHome}
+        setShowAddVehicleForm={setShowAddVehicleForm}
+        setShowVehicleList={setShowVehicleList}
+        setShowRenewalForm={setShowRenewalForm}
+        setShowRenewalVehicleList={setShowRenewalVehicleList}
+        setEditVehicleId={setEditVehicleId}
+        setVehicleInfo={setVehicleInfo}
+        setVehicleRenewal={setVehicleRenewal}
+        setShowLogSheetForm={setShowLogSheetForm}
+        setShowLogSheetList={setShowLogSheetList}
          
-        </ul>
-      </aside>
+      />
 
       <main className="flex-1 bg-gray-100">
-        <header className="bg-TealBlue text-white p-6 shadow-md flex items-center justify-between relative">
+        <header className="bg-[#2979FF] text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
-
+        {showHome && <Home />}
         {showAddVehicleForm && (
           <VehicleMgt
+          
             vehicleInfo={vehicleInfo}
             handleInputChange={handleInputChange}
             editVehicleId={editVehicleId}
@@ -306,7 +383,7 @@ const App = () => {
                 All Vehicles
               </h2>
             </div>
-            {vehicles.length > 0 ? ( //check for empty vehicles array
+            {vehicles.length > 0 ? (
               <Card
                 vehicles={vehicles}
                 handleEditVehicle={handleEditVehicle}
@@ -339,10 +416,37 @@ const App = () => {
                 All Vehicle Renewals
               </h2>
             </div>
-            {renewalVehicles.length > 0 ? ( // Check for empty array
+            {renewalVehicles.length > 0 ? (
               <Card renewalVehicles={renewalVehicles} />
             ) : (
               <p>No vehicle renewals available.</p>
+            )}
+          </div>
+        )}
+        {showLogSheetForm && (
+          <LogSheets
+          
+            logSheetInfo={logSheetInfo}
+            handleLogSheetInputChange={handleLogSheetInputChange}
+            handleAddLogSheet={handleAddLogSheet}
+            handleUpdateLogSheet={handleUpdateLogSheet}
+            editLogSheetId={editLogSheetId}
+            setShowLogSheetForm={setShowLogSheetForm}
+            setShowLogSheetList={setShowLogSheetList}
+          />
+        )}
+
+        {showLogSheetList && (
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Log Sheets</h2>
+            {logSheets.length > 0 ? (
+              <Card
+                logSheets={logSheets}
+                handleEditLogSheet={handleEditLogSheet}
+                handleDeleteLogSheet={handleDeleteLogSheet}
+              />
+            ) : (
+              <p>No log sheets available.</p>
             )}
           </div>
         )}
@@ -352,4 +456,3 @@ const App = () => {
 };
 
 export default App;
-

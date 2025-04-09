@@ -71,7 +71,7 @@ const RenewalMgt = ({
             setShowRenewalVehicleList(true);
             setShowVehicleList(false);
           }}
-          className="bg-blue text-white px-4 py-2 rounded hover:bg-blue transition"
+          className="bg-[#5046e4] text-white px-4 py-2 rounded hover:bg-blue transition"
         >
           Renewal List
         </button>
@@ -135,7 +135,7 @@ const RenewalMgt = ({
         <button
           type="button"
           onClick={handleRenewalVehicle}
-          className="mt-4 bg-blue text-white px-6 py-2 rounded shadow-md hover:bg-blue"
+          className="mt-4 bg-[#5046e4] text-white px-6 py-2 rounded shadow-md hover:bg-blue"
         >
           Add Renewal
         </button>

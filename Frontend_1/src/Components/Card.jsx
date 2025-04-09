@@ -1,6 +1,14 @@
 import React from "react";
 
-const Card = ({ vehicles, handleEditVehicle, handleDeleteVehicle, renewalVehicles }) => {
+const Card = ({
+  vehicles,
+  handleEditVehicle,
+  handleDeleteVehicle,
+  renewalVehicles,
+  logSheets,
+  handleEditLogSheet,
+  handleDeleteLogSheet,
+}) => {
   if (vehicles && vehicles.length > 0) {
     return (
       <div className="bg-white shadow rounded-md p-4">
@@ -80,9 +88,64 @@ const Card = ({ vehicles, handleEditVehicle, handleDeleteVehicle, renewalVehicle
     );
   }
 
+  if (logSheets && logSheets.length > 0) {
+    return (
+      <div className="bg-white shadow rounded-md p-4">
+        <h3 className="text-lg font-semibold mb-2">Log Sheet List</h3>
+        <table className="table-auto w-full border-collapse border border-gray-300 text-left">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 border-b border-gray-300">Vehicle Number</th>
+              <th className="px-4 py-2 border-b border-gray-300">Customer Name</th>
+              <th className="px-4 py-2 border-b border-gray-300">Location</th>
+              <th className="px-4 py-2 border-b border-gray-300">Opening Reading</th>
+              <th className="px-4 py-2 border-b border-gray-300">Closing Reading</th>
+              <th className="px-4 py-2 border-b border-gray-300">Total</th>
+              <th className="px-4 py-2 border-b border-gray-300">Driver</th>
+              <th className="px-4 py-2 border-b border-gray-300">Diesel Quantity</th>
+              <th className="px-4 py-2 border-b border-gray-300">Diesel Amount</th>
+              <th className="px-4 py-2 border-b border-gray-300">Remark</th>
+              <th className="px-4 py-2 border-b border-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logSheets.map((log) => (
+              <tr key={log._id || log.VehicleNumber}> {/* Assuming _id or VehicleNumber is unique */}
+                <td className="px-4 py-2 border-b border-gray-300">{log.VehicleNumber}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.CustomerName}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.Location}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.OpeningReading}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.ClosingReading}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.Total}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.Driver}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.DieselQuantity}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.DieselAmount}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{log.Remark}</td>
+                <td className="px-4 py-2 border-b border-gray-300">
+                  <button
+                    onClick={() => handleEditLogSheet(log)}
+                    className="text-blue-500 hover:underline mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteLogSheet(log._id)}
+                    className="text-red-500 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <div className="text-center text-gray-500">
-      <p>No vehicles or renewals available</p>
+      <p>No vehicles, renewals, or log sheets available</p>
     </div>
   );
 };
