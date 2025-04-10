@@ -1,17 +1,132 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const VehicleMgt = ({
-  vehicleInfo,
-  handleInputChange,
   editVehicleId,
-  handleAddVehicle,
-  handleUpdateVehicle,
   vehicleTypes,
   setShowAddVehicleForm,
   setShowRenewalForm,
   setShowRenewalVehicleList,
-  setShowVehicleList
+  setShowVehicleList,
+  setVehicles
 }) => {
+  const [vehicleInfo, setVehicleInfo] = useState({
+    Vehiclenumber: "",
+    OwnerName: "",
+    VehicleName: "",
+    VehicleType: "",
+    capacity: "",
+    FuelType: "",
+    year: "",
+    mileage: "",
+  });
+
+  useEffect(() => {
+    if (editVehicleId) {
+      const fetchVehicleForEdit = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/vehicles/${editVehicleId}`);
+          setVehicleInfo(response.data);
+        } catch (error) {
+          console.error("Error fetching vehicle for edit:", error);
+          alert("Failed to fetch vehicle data for editing.");
+        }
+      };
+      fetchVehicleForEdit();
+    } else {
+      setVehicleInfo({
+        Vehiclenumber: "",
+        OwnerName: "",
+        VehicleName: "",
+        VehicleType: "",
+        capacity: "",
+        FuelType: "",
+        year: "",
+        mileage: "",
+      });
+    }
+  }, [editVehicleId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setVehicleInfo({ ...vehicleInfo, [name]: value });
+  };
+
+  const handleAddVehicle = async () => {
+    if (
+      !vehicleInfo.Vehiclenumber ||
+      !vehicleInfo.OwnerName ||
+      !vehicleInfo.VehicleName ||
+      !vehicleInfo.VehicleType ||
+      !vehicleInfo.capacity ||
+      !vehicleInfo.FuelType ||
+      !vehicleInfo.year ||
+      !vehicleInfo.mileage
+    ) {
+      alert("Please fill out all fields before adding the vehicle.");
+      return;
+    }
+
+    try {
+      console.log("Vehicle Info to Post:", vehicleInfo);
+      const response = await axios.post(
+        "http://localhost:5000/api/vehicles",
+        vehicleInfo
+      );
+      console.log("Response from add vehicle:", response);
+      setVehicles(prevVehicles => [...prevVehicles, response.data]);
+      alert("Vehicle added successfully!");
+      setVehicleInfo({
+        Vehiclenumber: "",
+        OwnerName: "",
+        VehicleName: "",
+        VehicleType: "",
+        capacity: "",
+        FuelType: "",
+        year: "",
+        mileage: "",
+      });
+      setShowAddVehicleForm(false);
+      setShowVehicleList(true);
+    } catch (error) {
+      console.error("Error adding vehicle:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to add vehicle. Check console for details.");
+    }
+  };
+
+  const handleUpdateVehicle = async () => {
+    if (!editVehicleId) return;
+
+    try {
+      console.log("Vehicle Info to Update:", vehicleInfo);
+      const response = await axios.put(
+        `http://localhost:5000/api/vehicles/${editVehicleId}`,
+        vehicleInfo
+      );
+      console.log("Response from update vehicle:", response);
+      setVehicles(prevVehicles =>
+        prevVehicles.map((vehicle) =>
+          vehicle._id === editVehicleId ? response.data : vehicle
+        )
+      );
+
+      alert("Vehicle updated successfully!");
+      setShowAddVehicleForm(false);
+      setShowVehicleList(true);
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to update vehicle.");
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
@@ -164,6 +279,5 @@ const VehicleMgt = ({
     </div>
   );
 };
-
 
 export default VehicleMgt;

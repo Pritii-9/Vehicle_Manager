@@ -8,6 +8,7 @@ const Card = ({
   logSheets,
   handleEditLogSheet,
   handleDeleteLogSheet,
+  bills, // Added bills prop
 }) => {
   if (vehicles && vehicles.length > 0) {
     return (
@@ -143,9 +144,42 @@ const Card = ({
     );
   }
 
+  // New section for Billing List
+  if (bills && bills.length > 0) {
+    return (
+      <div className="bg-white shadow rounded-md p-4">
+        <h3 className="text-lg font-semibold mb-2">Billing List</h3>
+        <table className="table-auto w-full border-collapse border border-gray-300 text-left">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 border-b border-gray-300">Bill Number</th>
+              <th className="px-4 py-2 border-b border-gray-300">Vehicle Number</th>
+              <th className="px-4 py-2 border-b border-gray-300">Quantity</th>
+              <th className="px-4 py-2 border-b border-gray-300">Rate</th>
+              <th className="px-4 py-2 border-b border-gray-300">GST</th>
+              <th className="px-4 py-2 border-b border-gray-300">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bills.map((bill) => (
+              <tr key={bill._id || bill.billNumber}> {/* Assuming _id or billNumber is unique */}
+                <td className="px-4 py-2 border-b border-gray-300">{bill.billNumber}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{bill.vehicleNumber}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{bill.quantity}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{bill.rate}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{bill.gst}</td>
+                <td className="px-4 py-2 border-b border-gray-300">{new Date(bill.date).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <div className="text-center text-gray-500">
-      <p>No vehicles, renewals, or log sheets available</p>
+      <p>No vehicles, renewals, log sheets, or bills available</p>
     </div>
   );
 };

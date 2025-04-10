@@ -6,6 +6,7 @@ import RenewalMgt from "./Components/vehicle/RenewalMgt";
 import LogSheets from "./Components/vehicle/logSheets";
 import Sidebar from "./Components/Sidebar";
 import Home from "./Components/pages/Home";
+import BillingForm from "./Components/vehicle/BillingForm"; // Corrected import path
 
 const App = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -21,115 +22,19 @@ const App = () => {
   const [showLogSheetList, setShowLogSheetList] = useState(false);
   const [editLogSheetId, setEditLogSheetId] = useState(null);
   const [logSheets, setLogSheets] = useState([]);
-  const [showHome, setShowHome] = useState(true); 
+  const [showHome, setShowHome] = useState(true);
+
+  const [showBillingForm, setShowBillingForm] = useState(false); // State for Billing Form
+  const [showBillingList, setShowBillingList] = useState(false); // State for Billing List
+  const [bills, setBills] = useState([]); // State to store bills
+  const [displayedRate, setDisplayedRate] = useState(null); // State to hold the displayed rate in Home
 
   const [logSheetInfo, setLogSheetInfo] = useState({
-    // Define the fields for your log sheet form here
     vehicleNumber: "",
     date: "",
     driverName: "",
     startMileage: "",
     endMileage: "",
-    // ... other log sheet fields
-  });
-
-  useEffect(() => {
-    fetchVehicles();
-    fetchRenewals();
-    fetchLogSheets();
-  }, []);
-
-  const fetchLogSheets = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/logsheet");
-      setLogSheets(response.data);
-    } catch (error) {
-      console.error("Error fetching log sheets:", error);
-      alert("Failed to fetch log sheets.");
-    }
-  };
-
-  const handleLogSheetInputChange = (e) => {
-    const { name, value } = e.target;
-    setLogSheetInfo({ ...logSheetInfo, [name]: value });
-  };
-
-  const handleAddLogSheet = async () => {
-    try {
-      const response = await axios.post("http://localhost:5000/logsheet", logSheetInfo);
-      setLogSheets([...logSheets, response.data]);
-      setLogSheetInfo({
-        vehicleNumber: "",
-        CustomerName: "",
-        Location: "",
-        OpeningReading: "",
-        ClosingReading: "",
-        Total: "",
-        Driver: "",
-        DieselQuantity: "",
-        DieselAmount: "",
-        Remark: "",
-      });
-      setShowLogSheetForm(false);
-      setShowLogSheetList(true);
-      alert("Log sheet added successfully!");
-    } catch (error) {
-     console.error("Error adding log sheet:", error);
-     alert("Failed to add log sheet.");
-    }
-  };
-
-  const handleUpdateLogSheet = async () => {
-    if (!editLogSheetId) return;
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/logsheet/${editLogSheetId}`,
-        logSheetInfo
-      );
-      setLogSheets(
-        logSheets.map((ls) => (ls._id === editLogSheetId ? response.data : ls))
-      );
-      setEditLogSheetId(null);
-      setLogSheetInfo({
-        vehicleNumber: "",
-        
-      });
-      setShowLogSheetForm(false);
-      setShowLogSheetList(true);
-      alert("Log sheet updated successfully!");
-    } catch (error) {
-      console.error("Error updating log sheet:", error);
-      alert("Failed to update log sheet.");
-    }
-  };
-
-  const handleEditLogSheet = (logSheet) => {
-    setEditLogSheetId(logSheet._id);
-    setLogSheetInfo(logSheet);
-    setShowLogSheetForm(true);
-    setShowLogSheetList(false);
-  };
-
-  const handleDeleteLogSheet = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/logsheet/${id}`);
-      setLogSheets(logSheets.filter((ls) => ls._id !== id));
-      alert("Log sheet deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting log sheet:", error);
-     alert("Failed to delete log sheet.");
-    }
-  };
-
-  const [vehicleInfo, setVehicleInfo] = useState({
-    Vehiclenumber: "",
-    OwnerName: "",
-    VehicleName: "",
-    VehicleType: "",
-    capacity: "",
-    FuelType: "",
-    year: "",
-    mileage: "",
   });
   const [vehicleRenewal, setVehicleRenewal] = useState({
     vehiclenumber: "",
@@ -138,7 +43,23 @@ const App = () => {
     Expirydate: "",
   });
 
+  const [billInfo, setBillInfo] = useState({ // State for bill form
+    billNumber: "",
+    vehicleNumber: "",
+    quantity: "",
+    rate: "",
+    gst: "",
+    date: "",
+  });
+
   const vehicleTypes = ["Car", "Truck", "Bike"];
+
+  useEffect(() => {
+    fetchVehicles();
+    fetchRenewals();
+    fetchLogSheets();
+    fetchBills(); // Fetch bills on component mount
+  }, []);
 
   const fetchVehicles = async () => {
     try {
@@ -152,7 +73,7 @@ const App = () => {
         console.error("Vehicle API Response Data:", error.response.data);
         console.error("Vehicle API Response Status:", error.response.status);
       }
-     alert("Failed to fetch vehicles. Check the console for details.");
+      alert("Failed to fetch vehicles. Check the console for details.");
     }
   };
 
@@ -168,104 +89,41 @@ const App = () => {
         console.error("Renewal API Response Data:", error.response.data);
         console.error("Renewal API Response Status:", error.response.status);
       }
-     alert("Failed to fetch renewals. Check the console for details.");
+      alert("Failed to fetch renewals. Check the console for details.");
     }
   };
 
-  useEffect(() => {
-    fetchVehicles();
-    fetchRenewals();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setVehicleInfo({ ...vehicleInfo, [name]: value });
-  };
-
-  const handleAddVehicle = async () => {
-    if (
-      !vehicleInfo.Vehiclenumber ||
-      !vehicleInfo.OwnerName ||
-      !vehicleInfo.VehicleName ||
-      !vehicleInfo.VehicleType ||
-      !vehicleInfo.capacity ||
-      !vehicleInfo.FuelType ||
-      !vehicleInfo.year ||
-      !vehicleInfo.mileage
-    ) {
-      alert("Please fill out all fields before adding the vehicle.");
-      return;
-    }
-
+  const fetchLogSheets = async () => {
     try {
-      console.log("Vehicle Info to Post:", vehicleInfo);
-      const response = await axios.post(
-        "http://localhost:5000/api/vehicles",
-        vehicleInfo
-      );
-      console.log("Response from add vehicle:", response);
-      setVehicles([...vehicles, response.data]);
-      alert("Vehicle added successfully!");
-      setVehicleInfo({
-        Vehiclenumber: "",
-        OwnerName: "",
-        VehicleName: "",
-        VehicleType: "",
-        capacity: "",
-        FuelType: "",
-        year: "",
-        mileage: "",
-      });
-      setShowAddVehicleForm(false);
-      setShowVehicleList(true);
+      const response = await axios.get("http://localhost:5000/logsheet");
+      setLogSheets(response.data);
     } catch (error) {
-      console.error("Error adding vehicle:", error);
-      if (error.response) {
-        console.error("Server Response:", error.response.data);
-        console.error("Status Code:", error.response.status);
-      }
-      alert("Failed to add vehicle. Check console for details.");
+      console.error("Error fetching log sheets:", error);
+      //alert("Failed to fetch log sheets.");
     }
   };
 
-  const handleUpdateVehicle = async () => {
-    if (!editVehicleId) return;
-
+  const fetchBills = async () => {
     try {
-      console.log("Vehicle Info to Update:", vehicleInfo);
-      const response = await axios.put(
-        `http://localhost:5000/api/vehicles/${editVehicleId}`,
-        vehicleInfo
-      );
-      console.log("Response from update vehicle:", response);
-      setVehicles(
-        vehicles.map((vehicle) =>
-          vehicle._id === editVehicleId ? response.data : vehicle
-        )
-      );
-
-      alert("Vehicle updated successfully!");
-      setEditVehicleId(null);
-      setVehicleInfo({
-        Vehiclenumber: "",
-        OwnerName: "",
-        VehicleName: "",
-        VehicleType: "",
-        capacity: "",
-        FuelType: "",
-        year: "",
-        mileage: "",
-      });
-      setShowAddVehicleForm(false);
-      setShowVehicleList(true);
+      const response = await axios.get("http://localhost:5000/api/bills"); // Replace with your actual API
+      setBills(response.data);
     } catch (error) {
-      console.error("Error updating vehicle:", error);
-      if (error.response) {
-        console.error("Server Response:", error.response.data);
-        console.error("Status Code:", error.response.status);
-      }
-      alert("Failed to update vehicle.");
+      console.error("Error fetching bills:", error);
+      // alert("Failed to fetch bills."); // Remove alert.  Handle errors in component.
     }
+  };
+
+  const handleEditVehicle = (vehicle) => {
+    setEditVehicleId(vehicle._id);
+    setShowAddVehicleForm(true);
+    setShowVehicleList(false);
+    setShowRenewalForm(false);
+    setShowRenewalVehicleList(false);
+    setShowLogSheetForm(false);
+    setShowLogSheetList(false);
+    setShowHome(false);
+    setShowBillingForm(false);
+    setShowBillingList(false); // Ensure billing list is also hidden
   };
 
   const handleDeleteVehicle = async (id) => {
@@ -283,16 +141,6 @@ const App = () => {
       }
       alert("Failed to delete vehicle.");
     }
-  };
-
-  const handleEditVehicle = (vehicle) => {
-    setEditVehicleId(vehicle._id);
-    setVehicleInfo(vehicle);
-    setShowAddVehicleForm(true);
-    setShowVehicleList(false);
-    setShowRenewalForm(false);
-    setShowRenewalVehicleList(false);
-    
   };
 
   const handleRenewalInputChange = (e) => {
@@ -337,45 +185,172 @@ const App = () => {
     }
   };
 
+  const handleLogSheetInputChange = (e) => {
+    const { name, value } = e.target;
+    setLogSheetInfo({ ...logSheetInfo, [name]: value });
+  };
+
+  const handleAddLogSheet = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/logsheet", logSheetInfo);
+      setLogSheets([...logSheets, response.data]);
+      setLogSheetInfo({
+        vehicleNumber: "",
+        date: "",
+        driverName: "",
+        startMileage: "",
+        endMileage: "",
+      });
+      setShowLogSheetForm(false);
+      setShowLogSheetList(true);
+      alert("Log sheet added successfully!");
+    } catch (error) {
+      console.error("Error adding log sheet:", error);
+      alert("Failed to add log sheet.");
+    }
+  };
+
+  const handleUpdateLogSheet = async () => {
+    if (!editLogSheetId) return;
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/logsheet/${editLogSheetId}`,
+        logSheetInfo
+      );
+      setLogSheets(
+        logSheets.map((ls) => (ls._id === editLogSheetId ? response.data : ls))
+      );
+      setEditLogSheetId(null);
+      setLogSheetInfo({
+        vehicleNumber: "",
+        date: "",
+        driverName: "",
+        startMileage: "",
+        endMileage: "",
+      });
+      setShowLogSheetForm(false);
+      setShowLogSheetList(true);
+      alert("Log sheet updated successfully!");
+    } catch (error) {
+      console.error("Error updating log sheet:", error);
+      alert("Failed to update log sheet.");
+    }
+  };
+
+  const handleEditLogSheet = (logSheet) => {
+    setEditLogSheetId(logSheet._id);
+    setLogSheetInfo(logSheet);
+    setShowLogSheetForm(true);
+    setShowLogSheetList(false);
+    setShowHome(false);
+    setShowBillingForm(false);
+    setShowBillingList(false); // Ensure billing list is also hidden
+  };
+
+  const handleDeleteLogSheet = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/logsheet/${id}`);
+      setLogSheets(logSheets.filter((ls) => ls._id !== id));
+      alert("Log sheet deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting log sheet:", error);
+      alert("Failed to delete log sheet.");
+    }
+  };
+
+  const handleBillingFormClick = () => {
+    setShowHome(false);
+    setShowBillingForm(true);
+    setShowBillingList(false); // Ensure billing list is hidden when showing the form
+    setBillInfo({
+      billNumber: "",
+      vehicleNumber: "",
+      quantity: "",
+      rate: "",
+      gst: "",
+      date: "",
+    });
+  };
+
+  const handleShowBillingListClick = () => {
+    setShowHome(false);
+    setShowAddVehicleForm(false);
+    setShowVehicleList(false);
+    setShowRenewalForm(false);
+    setShowRenewalVehicleList(false);
+    setShowLogSheetForm(false);
+    setShowLogSheetList(false);
+    setShowBillingForm(false);
+    setShowBillingList(true);
+  };
+
+  const handleBillSubmit = (rate) => {
+    setDisplayedRate(rate); // Update state in App
+    setShowBillingForm(false); // Hide the form after submission
+    // Do NOT automatically show the billing list
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setBillInfo({ ...billInfo, [name]: value });
+  };
+
+  const handleAddBill = async () => {
+    try {
+      console.log("Billing data to be sent:", billInfo);
+      const response = await axios.post(
+        "http://localhost:5000/api/bills", // Replace with your actual API endpoint
+        billInfo
+      );
+      console.log("Response from server:", response);
+      alert("Bill added successfully!");
+      setBills([...bills, response.data]); // Update the bills state
+      setDisplayedRate(billInfo.rate); // Update the displayed rate immediately on submit
+      setBillInfo({
+        billNumber: "",
+        vehicleNumber: "",
+        quantity: "",
+        rate: "",
+        gst: "",
+        date: "",
+      });
+      setShowBillingForm(false); // Hide the form
+    } catch (error) {
+      console.error("Error adding bill:", error);
+      if (error.response) {
+        console.error("Server response data:", error.response.data);
+        console.error("Server response status:", error.response.status);
+        console.error("Server response headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("Request error:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+      alert("Failed to add bill. See console for details.");
+    }
+  };
+
   return (
     <div className="flex h-screen">
       <Sidebar
-      setShowHome={setShowHome}
+        setShowHome={setShowHome}
         setShowAddVehicleForm={setShowAddVehicleForm}
         setShowVehicleList={setShowVehicleList}
         setShowRenewalForm={setShowRenewalForm}
         setShowRenewalVehicleList={setShowRenewalVehicleList}
         setEditVehicleId={setEditVehicleId}
-        setVehicleInfo={setVehicleInfo}
-        setVehicleRenewal={setVehicleRenewal}
         setShowLogSheetForm={setShowLogSheetForm}
         setShowLogSheetList={setShowLogSheetList}
-         
+        setShowBillingForm={setShowBillingForm}
+        setShowBillingList={setShowBillingList} // Pass setShowBillingList to Sidebar
       />
 
       <main className="flex-1 bg-gray-100">
-        <header className="bg-[#2979FF] text-white p-6 shadow-md flex items-center justify-between relative">
+        <header className="bg-purple-800 text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
-        {showHome && <Home />}
-        {showAddVehicleForm && (
-          <VehicleMgt
-          
-            vehicleInfo={vehicleInfo}
-            handleInputChange={handleInputChange}
-            editVehicleId={editVehicleId}
-            handleAddVehicle={handleAddVehicle}
-            handleUpdateVehicle={handleUpdateVehicle}
-            vehicleTypes={vehicleTypes}
-            setShowAddVehicleForm={setShowAddVehicleForm}
-            setShowRenewalForm={setShowRenewalForm}
-            setShowRenewalVehicleList={setShowRenewalVehicleList}
-            setShowVehicleList={setShowVehicleList}
-            setShowVehicles={setVehicles}
-            setShowRenewalVehicles={setRenewalVehicles}
-          />
-        )}
-
+        {showHome && <Home setShowBillingForm={setShowBillingForm} />}
+        {showAddVehicleForm && <VehicleMgt {...{ editVehicleId, vehicleTypes, setShowAddVehicleForm, setShowRenewalForm, setShowRenewalVehicleList, setShowVehicleList, setVehicles }} />}
         {showVehicleList && (
           <div className="p-6">
             <div className="flex items-center justify-between">
@@ -394,21 +369,7 @@ const App = () => {
             )}
           </div>
         )}
-
-        {showRenewalForm && (
-          <RenewalMgt
-            vehicleRenewal={vehicleRenewal}
-            handleRenewalInputChange={handleRenewalInputChange}
-            handleRenewalVehicle={handleRenewalVehicle}
-            setShowAddVehicleForm={setShowAddVehicleForm}
-            setShowRenewalForm={setShowRenewalForm}
-            setShowRenewalVehicleList={setShowRenewalVehicleList}
-            setShowVehicleList={setShowVehicleList}
-            setShowVehicles={setVehicles}
-            setShowRenewalVehicles={setRenewalVehicles}
-          />
-        )}
-
+        {showRenewalForm && <RenewalMgt {...{ vehicleRenewal, handleRenewalInputChange, handleRenewalVehicle, setShowAddVehicleForm, setShowRenewalForm, setShowRenewalVehicleList, setShowVehicleList, setShowVehicles: setVehicles, setShowRenewalVehicles: setRenewalVehicles }} />}
         {showRenewalVehicleList && (
           <div className="p-6">
             <div className="flex items-center justify-between">
@@ -423,19 +384,7 @@ const App = () => {
             )}
           </div>
         )}
-        {showLogSheetForm && (
-          <LogSheets
-          
-            logSheetInfo={logSheetInfo}
-            handleLogSheetInputChange={handleLogSheetInputChange}
-            handleAddLogSheet={handleAddLogSheet}
-            handleUpdateLogSheet={handleUpdateLogSheet}
-            editLogSheetId={editLogSheetId}
-            setShowLogSheetForm={setShowLogSheetForm}
-            setShowLogSheetList={setShowLogSheetList}
-          />
-        )}
-
+        {showLogSheetForm && <LogSheets {...{ logSheetInfo, handleLogSheetInputChange, handleAddLogSheet, handleUpdateLogSheet, editLogSheetId, setShowLogSheetForm, setShowLogSheetList }} />}
         {showLogSheetList && (
           <div className="p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Log Sheets</h2>
@@ -448,6 +397,25 @@ const App = () => {
             ) : (
               <p>No log sheets available.</p>
             )}
+          </div>
+        )}
+        {showBillingForm && (
+          <BillingForm
+            setShowBillingList={setShowBillingList}
+            onBillSubmit={handleBillSubmit}
+            onShowBillingListClick={handleShowBillingListClick} // Pass the handler
+          />
+        )}
+        {showBillingList && (
+          <div className="p-6">
+            <div className="bg-white shadow rounded-md p-4">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Billing List</h2>
+              {bills.length > 0 ? (
+                <Card bills={bills} />
+              ) : (
+                <p>No bills available.</p>
+              )}
+            </div>
           </div>
         )}
       </main>

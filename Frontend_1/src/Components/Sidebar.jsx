@@ -12,7 +12,8 @@ const Sidebar = ({
   setShowLogSheetForm,
   setShowLogSheetList,
   setLogSheetInfo,
-  setShowHome, // Add prop to show Home component
+  setShowHome,
+  setShowBillingForm, // Make sure this prop is being passed from App.jsx
 }) => {
   const resetAllFormsAndLists = () => {
     setShowAddVehicleForm(false);
@@ -21,8 +22,9 @@ const Sidebar = ({
     setShowRenewalVehicleList(false);
     setShowLogSheetForm(false);
     setShowLogSheetList(false);
+    setShowBillingForm(false); // Ensure billing form is also hidden
     setEditVehicleId(null);
-    setShowHome(true); // show home when home button is clicked
+    setShowHome(true);
   };
 
   const handleAddVehicleClick = () => {
@@ -72,6 +74,12 @@ const Sidebar = ({
     });
   };
 
+  const handleBillingFormClick = () => {
+    resetAllFormsAndLists();
+    setShowBillingForm(true);
+    setShowHome(false);
+  };
+
   const handleHomeClick = () => {
     resetAllFormsAndLists();
     setShowHome(true);
@@ -79,11 +87,12 @@ const Sidebar = ({
 
   return (
     <aside className="w-1/4 bg-white text-black-800 p-4 h-screen flex-shrink-0">
-      <h2 className="text-lg font-bold" onClick={handleHomeClick}>Home</h2>
+      <h2 className="text-lg font-bold cursor-pointer" onClick={handleHomeClick}>Home</h2>
       <ul className="mt-4 text-font-semibold">
         <MenuItem label="Add Vehicle" onClick={handleAddVehicleClick} />
         <MenuItem label="Add Renewal" onClick={handleAddRenewalClick} />
         <MenuItem label="Log sheet" onClick={handleLogSheetClick} />
+        <MenuItem label="Billing Log Sheet" onClick={handleBillingFormClick} /> {/* Corrected prop name */}
       </ul>
     </aside>
   );
