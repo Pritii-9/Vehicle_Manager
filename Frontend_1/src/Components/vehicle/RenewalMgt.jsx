@@ -43,7 +43,7 @@ const RenewalMgt = ({
         Issuedate: "",
         Expirydate: "",
       });
-      setShowRenewalForm(false); 
+      setShowRenewalForm(false); // Hide form on success
       setShowRenewalVehicleList(true);
     } catch (error) {
       console.error("Error adding vehicle renewal:", error); 

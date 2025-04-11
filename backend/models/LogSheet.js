@@ -8,8 +8,8 @@ const logSheetSchema = new mongoose.Schema({
   closingReading: Number,
   total: Number,
   driver: String,
-  diselQuantity: Number,
-  diselAmount: Number,
+  dieselQuantity: Number, 
+  dieselAmount: Number,
   remark: String,
 });
 

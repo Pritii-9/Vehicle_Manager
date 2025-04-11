@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -12,8 +13,8 @@ const LogSheets = ({ setShowLogSheetList }) => {
     closingReading: "",
     total: "",
     driver: "",
-    dieselQuantity: "",
-    dieselAmount: "",
+    diselQuantity: "", 
+    diselAmount: "",
     remark: "",
   });
   const [logSheets, setLogSheets] = useState([]);
@@ -37,20 +38,26 @@ const LogSheets = ({ setShowLogSheetList }) => {
 
   const handleLogSheetInputChange = (e) => {
     const { name, value } = e.target;
-    setLogSheetInfo({ ...logSheetInfo, [name]: value });
+    setLogSheetInfo(prevInfo => ({ ...prevInfo, [name]: value }));
   };
 
   const handleSaveLogSheet = async () => {
     try {
+      let response;
       if (editLogSheetId) {
-        await axios.put(
+        response = await axios.put(
           `http://localhost:5000/api/logsheet/${editLogSheetId}`,
           logSheetInfo
         );
+        alert("Log sheet updated successfully!");
+        setLogSheets(prevLogSheets =>
+          prevLogSheets.map(ls => (ls._id === editLogSheetId ? { ...response.data } : ls))
+        );
       } else {
-        await axios.post("http://localhost:5000/api/logsheet", logSheetInfo);
+        response = await axios.post("http://localhost:5000/api/logsheet", logSheetInfo);
+        alert("Log sheet saved successfully!");
+        setLogSheets(prevLogSheets => [...prevLogSheets, { ...response.data }]);
       }
-      alert("Log sheet saved successfully!");
       setLogSheetInfo({
         vehicleNumber: "",
         customerName: "",
@@ -64,9 +71,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
         remark: "",
       });
       setEditLogSheetId(null);
-      if (showList) {
-        fetchLogSheets();
-      }
+      setShowList(true);
     } catch (error) {
       console.error(error);
       alert("Failed to save log sheet.");
@@ -94,7 +99,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
   };
 
   const handleEditLogSheet = (logSheet) => {
-    setLogSheetInfo(logSheet);
+    setLogSheetInfo({ ...logSheet }); // Ensure all fields are populated
     setEditLogSheetId(logSheet._id);
   };
 
@@ -102,9 +107,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
     try {
       await axios.delete(`http://localhost:5000/api/logsheet/${id}`);
       alert("Log sheet deleted successfully!");
-      if (showList) {
-        fetchLogSheets();
-      }
+      setLogSheets(prevLogSheets => prevLogSheets.filter(ls => ls._id !== id));
     } catch (error) {
       console.error("Error deleting log sheet:", error);
       alert("Failed to delete log sheet.");
@@ -123,98 +126,158 @@ const LogSheets = ({ setShowLogSheetList }) => {
         </button>
       </div>
       <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg">
-        <input
-          type="text"
-          name="vehicleNumber"
-          placeholder="Vehicle Number"
-          value={logSheetInfo.vehicleNumber}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="customerName"
-          placeholder="Customer Name"
-          value={logSheetInfo.customerName}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={logSheetInfo.location}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="openingReading"
-          placeholder="Opening Reading"
-          value={logSheetInfo.openingReading}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="closingReading"
-          placeholder="Closing Reading"
-          value={logSheetInfo.closingReading}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="total"
-          placeholder="Total"
-          value={logSheetInfo.total}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="driver"
-          placeholder="Driver"
-          value={logSheetInfo.driver}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="dieselQuantity"
-          placeholder="Diesel Quantity"
-          value={logSheetInfo.dieselQuantity}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="dieselAmount"
-          placeholder="Diesel Amount"
-          value={logSheetInfo.dieselAmount}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="remark"
-          placeholder="Remark"
-          value={logSheetInfo.remark}
-          onChange={handleLogSheetInputChange}
-          className="border p-2 rounded"
-        />
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="vehicleNumber">
+            Vehicle Number
+          </label>
+          <input
+            type="text"
+            name="vehicleNumber"
+            placeholder="Vehicle Number"
+            value={logSheetInfo.vehicleNumber}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="vehicleNumber"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerName">
+            Customer Name
+          </label>
+          <input
+            type="text"
+            name="customerName"
+            placeholder="Customer Name"
+            value={logSheetInfo.customerName}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="customerName"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
+            Location
+          </label>
+          <input
+            type="text"
+            name="location"
+            placeholder="Location"
+            value={logSheetInfo.location}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="location"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="openingReading">
+            Opening Reading
+          </label>
+          <input
+            type="number"
+            name="openingReading"
+            placeholder="Opening Reading"
+            value={logSheetInfo.openingReading}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="openingReading"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="closingReading">
+            Closing Reading
+          </label>
+          <input
+            type="number"
+            name="closingReading"
+            placeholder="Closing Reading"
+            value={logSheetInfo.closingReading}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="closingReading"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="total">
+            Total
+          </label>
+          <input
+            type="number"
+            name="total"
+            placeholder="Total"
+            value={logSheetInfo.total}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="total"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="driver">
+            Driver
+          </label>
+          <input
+            type="text"
+            name="driver"
+            placeholder="Driver"
+            value={logSheetInfo.driver}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="driver"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="dieselQuantity">
+            Diesel Quantity
+          </label>
+          <input
+            type="number"
+            name="diselQuantity"
+            placeholder="Diesel Quantity"
+            value={logSheetInfo.dieselQuantity}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="diselQuantity"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="dieselAmount">
+            Diesel Amount
+          </label>
+          <input
+            type="number"
+            name="diselAmount"
+            placeholder="Diesel Amount"
+            value={logSheetInfo.dieselAmount}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="diselAmount"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="remark">
+            Remark
+          </label>
+          <input
+            type="text"
+            name="remark"
+            placeholder="Remark"
+            value={logSheetInfo.remark}
+            onChange={handleLogSheetInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="remark"
+          />
+        </div>
         <div className="flex justify-end col-span-2">
           <button
             type="button"
             onClick={handleClearLogSheet}
-            className="bg-[#5046e4]  text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
           >
             Clear
           </button>
           <button
             type="button"
             onClick={handleSaveLogSheet}
-            className="bg-[#5046e4] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             {editLogSheetId ? "Update" : "Save"}
           </button>
@@ -228,45 +291,47 @@ const LogSheets = ({ setShowLogSheetList }) => {
             <table className="min-w-full bg-white border border-gray-300">
               <thead>
                 <tr>
-                  <th>Vehicle Number</th>
-                  <th>Customer Name</th>
-                  <th>Location</th>
-                  <th>Opening Reading</th>
-                  <th>Closing Reading</th>
-                  <th>Total</th>
-                  <th>Driver</th>
-                  <th>Diesel Quantity</th>
-                  <th>Diesel Amount</th>
-                  <th>Remark</th>
-                  <th>Actions</th>
+                  <th className="py-2 px-4 border-b text-center">Vehicle Number</th>
+                  <th className="py-2 px-4 border-b text-center">Customer Name</th>
+                  <th className="py-2 px-4 border-b text-center">Location</th>
+                  <th className="py-2 px-4 border-b text-center">Opening Reading</th>
+                  <th className="py-2 px-4 border-b text-center">Closing Reading</th>
+                  <th className="py-2 px-4 border-b text-center">Total</th>
+                  <th className="py-2 px-4 border-b text-center">Driver</th>
+                  <th className="py-2 px-4 border-b text-center">Diesel Quantity</th>
+                  <th className="py-2 px-4 border-b text-center">Diesel Amount</th>
+                  <th className="py-2 px-4 border-b text-center">Remark</th>
+                  <th className="py-2 px-4 border-b text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {logSheets.map((logSheet) => (
                   <tr key={logSheet._id}>
-                    <td>{logSheet.vehicleNumber}</td>
-                    <td>{logSheet.customerName}</td>
-                    <td>{logSheet.location}</td>
-                    <td>{logSheet.openingReading}</td>
-                    <td>{logSheet.closingReading}</td>
-                    <td>{logSheet.total}</td>
-                    <td>{logSheet.driver}</td>
-                    <td>{logSheet.dieselQuantity}</td>
-                    <td>{logSheet.dieselAmount}</td>
-                    <td>{logSheet.remark}</td>
-                    <td>
-                      <button
-                        onClick={() => handleEditLogSheet(logSheet)}
-                        className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteLogSheet(logSheet._id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        Delete
-                      </button>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.vehicleNumber}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.customerName}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.location}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.openingReading}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.closingReading}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.total}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.driver}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.dieselQuantity}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.dieselAmount}</td>
+                    <td className="py-2 px-4 border-b text-center">{logSheet.remark}</td>
+                    <td className="py-2 px-4 border-b text-center">
+                      <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handleEditLogSheet(logSheet)}
+                          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded text-xs"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteLogSheet(logSheet._id)}
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
