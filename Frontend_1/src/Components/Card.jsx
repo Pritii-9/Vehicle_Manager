@@ -8,13 +8,14 @@ const Card = ({
   logSheets,
   handleEditLogSheet,
   handleDeleteLogSheet,
-  bills, // Added bills prop
+  bills,
 }) => {
   if (vehicles && vehicles.length > 0) {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Vehicle List</h3>
         <table className="table-auto w-full border-collapse border border-gray-300 text-left">
+      
           <thead>
             <tr>
               <th className="px-4 py-2 border-b border-gray-300">Vehicle Number</th>
@@ -59,9 +60,7 @@ const Card = ({
         </table>
       </div>
     );
-  }
-
-  if (renewalVehicles && renewalVehicles.length > 0) {
+  } else if (renewalVehicles && renewalVehicles.length > 0) {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Vehicle Renewal List</h3>
@@ -76,7 +75,7 @@ const Card = ({
           </thead>
           <tbody>
             {renewalVehicles.map((renewal) => (
-              <tr key={renewal._id || renewal.vehiclenumber}> {/* Assuming _id or vehiclenumber is unique */}
+              <tr key={renewal._id || renewal.vehiclenumber}>
                 <td className="px-4 py-2 border-b border-gray-300">{renewal.vehiclenumber}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{renewal.renewalfor}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{new Date(renewal.Issuedate).toLocaleDateString()}</td>
@@ -87,9 +86,7 @@ const Card = ({
         </table>
       </div>
     );
-  }
-
-  if (logSheets && logSheets.length > 0) {
+  } else if (logSheets && logSheets.length > 0) {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Log Sheet List</h3>
@@ -111,7 +108,7 @@ const Card = ({
           </thead>
           <tbody>
             {logSheets.map((log) => (
-              <tr key={log._id || log.VehicleNumber}> {/* Assuming _id or VehicleNumber is unique */}
+              <tr key={log._id || log.VehicleNumber}>
                 <td className="px-4 py-2 border-b border-gray-300">{log.VehicleNumber}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{log.CustomerName}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{log.Location}</td>
@@ -142,10 +139,7 @@ const Card = ({
         </table>
       </div>
     );
-  }
-
-  // New section for Billing List
-  if (bills && bills.length > 0) {
+  } else if (bills && bills.length > 0) {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Billing List</h3>
@@ -162,7 +156,7 @@ const Card = ({
           </thead>
           <tbody>
             {bills.map((bill) => (
-              <tr key={bill._id || bill.billNumber}> {/* Assuming _id or billNumber is unique */}
+              <tr key={bill._id || bill.billNumber}>
                 <td className="px-4 py-2 border-b border-gray-300">{bill.billNumber}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{bill.vehicleNumber}</td>
                 <td className="px-4 py-2 border-b border-gray-300">{bill.quantity}</td>
@@ -175,13 +169,13 @@ const Card = ({
         </table>
       </div>
     );
+  } else {
+    return (
+      <div className="text-center text-gray-500">
+        <p>No data available</p>
+      </div>
+    );
   }
-
-  return (
-    <div className="text-center text-gray-500">
-      <p>No vehicles, renewals, log sheets, or bills available</p>
-    </div>
-  );
 };
 
 export default Card;
