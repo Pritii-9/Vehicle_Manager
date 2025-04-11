@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+
+
 const LogSheets = ({ setShowLogSheetList }) => {
   const [logSheetInfo, setLogSheetInfo] = useState({
     vehicleNumber: "",
@@ -115,7 +117,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
         <h2 className="text-xl font-bold text-gray-800">Log Sheet</h2>
         <button
           onClick={handleShowLogSheets}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-[#5046e4] text-white font-bold py-2 px-4 rounded"
         >
           Show Log Sheets
         </button>
@@ -205,14 +207,14 @@ const LogSheets = ({ setShowLogSheetList }) => {
           <button
             type="button"
             onClick={handleClearLogSheet}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
+            className="bg-[#5046e4]  text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
           >
             Clear
           </button>
           <button
             type="button"
             onClick={handleSaveLogSheet}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-[#5046e4] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             {editLogSheetId ? "Update" : "Save"}
           </button>

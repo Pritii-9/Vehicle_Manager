@@ -4,7 +4,7 @@ import vectorImage from "../../assets/vehicle.jpg"
 const Home = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <h1 className="text-4xl font-bold mb-8 text-blue-600">
+      <h1 className="text-4xl font-bold mb-8 text-purple-700">
         Welcome to Vehicle Manager
       </h1>
       <img

@@ -45,7 +45,7 @@ const App = () => {
       setLogSheets(response.data);
     } catch (error) {
       console.error("Error fetching log sheets:", error);
-      alert("Failed to fetch log sheets.");
+     // alert("Failed to fetch log sheets.");
     }
   };
 
@@ -354,7 +354,7 @@ const App = () => {
       />
 
       <main className="flex-1 bg-gray-100">
-        <header className="bg-TealBlue text-white p-6 shadow-md flex items-center justify-between relative">
+        <header className="bg-purple-800 text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
         {showHome && <Home />}
