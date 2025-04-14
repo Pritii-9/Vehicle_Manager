@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import vectorImage from "../../assets/vehicle.jpg";
 import { motion } from "framer-motion";
-import { FaCar, FaUsers, FaMoneyBillAlt } from 'react-icons/fa'; // Import icons
+import { FaCar, FaUsers, FaMoneyBillAlt } from 'react-icons/fa';
 
 const Home = () => {
   const [displayedRate, setDisplayedRate] = useState(null);
