@@ -215,8 +215,10 @@ const App = () => {
           {...{
             showBillingForm,
             showBillingList,
-            handleBillSubmit: handleBillSubmit(setBills, setDisplayedRate),
-            handleShowBillingListClick: handleShowBillingListClick(
+            // handleBillSubmit: handleBillSubmit(setBills, setDisplayedRate),
+            // handleShowBillingListClick: handleShowBillingListClick(
+            handleBillSubmit: () => handleBillSubmit(setBills, setDisplayedRate),
+            handleShowBillingListClick: () => handleShowBillingListClick(
               setShowHome,
               setShowAddVehicleForm,
               setShowVehicleList,
@@ -227,8 +229,12 @@ const App = () => {
               setShowBillingForm,
               setShowBillingList
             ),
-            handleInputChange: handleInputChange(setBillInfo),
-            handleAddBill: handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
+            // handleInputChange: handleInputChange(setBillInfo),
+            // handleAddBill: handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
+            handleInputChange: () => handleInputChange(setBillInfo),
+            handleAddBill: () => handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
+            
+            
             billInfo,
             bills,
           }}
