@@ -93,6 +93,7 @@ const App = () => {
         setVehicles(vehiclesData);
         const renewalsData = await fetchRenewals();
         setRenewalVehicles(renewalsData);
+        console.log("Fetched renewals data:", renewalsData);
         const billsData = await fetchBills();
         setBills(billsData);
       } catch (error) {
@@ -122,7 +123,12 @@ const App = () => {
         <header className="bg-purple-800 text-white p-6 shadow-md flex items-center justify-between relative">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
-        <HomeSection showHome={showHome} setShowBillingForm={setShowBillingForm} displayedRate={displayedRate} />
+        <HomeSection
+          showHome={showHome}
+          setShowBillingForm={setShowBillingForm}
+          displayedRate={displayedRate}
+          renewalVehicles={renewalVehicles} // Pass renewalVehicles to HomeSection
+        />
         <VehicleSection
           {...{
             showAddVehicleForm,
@@ -139,7 +145,7 @@ const App = () => {
             setVehicleInfo,
             fetchVehicles,
             handleEditVehicle: handleEditVehicle(
-              null, // editVehicleId will be set in the handler
+              null,
               setShowAddVehicleForm,
               setShowVehicleList,
               setShowRenewalForm,
@@ -151,7 +157,7 @@ const App = () => {
               setShowBillingList,
               setVehicleInfo
             ),
-            handleDeleteVehicle: handleDeleteVehicle(null, setVehicles, setShowVehicleList), // id will be passed in the UI
+            handleDeleteVehicle: handleDeleteVehicle(null, setVehicles, setShowVehicleList),
           }}
         />
         <RenewalSection
@@ -195,7 +201,7 @@ const App = () => {
               setEditLogSheetId
             ),
             handleEditLogSheet: handleEditLogSheet(
-              null, // logSheet will be passed in the UI
+              null,
               setEditLogSheetId,
               setLogSheetInfo,
               setShowLogSheetForm,
@@ -204,7 +210,7 @@ const App = () => {
               setShowBillingForm,
               setShowBillingList
             ),
-            handleDeleteLogSheet: handleDeleteLogSheet(null, setLogSheets), // id will be passed in the UI
+            handleDeleteLogSheet: handleDeleteLogSheet(null, setLogSheets),
             editLogSheetId,
             setShowLogSheetForm,
             setShowLogSheetList,
@@ -215,8 +221,6 @@ const App = () => {
           {...{
             showBillingForm,
             showBillingList,
-            // handleBillSubmit: handleBillSubmit(setBills, setDisplayedRate),
-            // handleShowBillingListClick: handleShowBillingListClick(
             handleBillSubmit: () => handleBillSubmit(setBills, setDisplayedRate),
             handleShowBillingListClick: () => handleShowBillingListClick(
               setShowHome,
@@ -229,12 +233,8 @@ const App = () => {
               setShowBillingForm,
               setShowBillingList
             ),
-            // handleInputChange: handleInputChange(setBillInfo),
-            // handleAddBill: handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
             handleInputChange: () => handleInputChange(setBillInfo),
             handleAddBill: () => handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
-            
-            
             billInfo,
             bills,
           }}

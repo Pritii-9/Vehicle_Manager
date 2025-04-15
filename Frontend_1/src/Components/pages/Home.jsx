@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from "react";
 import vectorImage from "../../assets/vehicle.jpg";
 import { motion } from "framer-motion";
-import { FaCar, FaUsers, FaMoneyBillAlt } from 'react-icons/fa';
+import { FaCar, FaUsers, FaMoneyBillAlt, FaTimesCircle, FaBell } from 'react-icons/fa'; // Import bell icon
 
-const Home = () => {
+const Home = ({ renewalVehicles }) => {
   const [displayedRate, setDisplayedRate] = useState(null);
   const [activeCard, setActiveCard] = useState(null);
   const [totalAmount, setTotalAmount] = useState(null);
   const [visitorCount, setVisitorCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   useEffect(() => {
     const fetchLastBillRate = async () => {
@@ -40,6 +42,42 @@ const Home = () => {
     }
   }, [displayedRate, visitorCount]);
 
+  useEffect(() => {
+    const checkExpiringVehicles = () => {
+      if (renewalVehicles && renewalVehicles.length > 0) {
+        const today = new Date();
+        const tenDaysFromNow = new Date(today);
+        tenDaysFromNow.setDate(today.getDate() + 10);
+
+        const newExpiringVehicles = [];
+        renewalVehicles.forEach((renewal) => {
+          const expiryDate = new Date(renewal.Expirydate);
+          if (expiryDate <= tenDaysFromNow && expiryDate >= today) {
+            newExpiringVehicles.push({
+              id: renewal.vehiclenumber, // Use vehicle number as a unique ID
+              vehicleNumber: renewal.vehiclenumber,
+              expiryDate: expiryDate.toLocaleDateString(),
+            });
+          }
+        });
+
+        // Update notifications, adding new ones if they don't exist (max 4)
+        setNotifications((prevNotifications) => {
+          const existingIds = prevNotifications.map(n => n.id);
+          const newNotifications = newExpiringVehicles.filter(n => !existingIds.includes(n.id));
+          return [...prevNotifications, ...newNotifications].slice(0, 4); // Limit to max 4
+        });
+      } else {
+        setNotifications([]); // Clear notifications if no renewal data
+      }
+    };
+
+    checkExpiringVehicles();
+    const intervalId = setInterval(checkExpiringVehicles, 60 * 60 * 1000);
+    return () => clearInterval(intervalId);
+
+  }, [renewalVehicles]);
+
   const generateRandomVisitorCount = () => {
     const randomVisitors = Math.floor(Math.random() * 100) + 50;
     setVisitorCount(randomVisitors);
@@ -47,6 +85,16 @@ const Home = () => {
 
   const handleCardClick = (cardId) => {
     setActiveCard(activeCard === cardId ? null : cardId);
+  };
+
+  const handleCloseNotification = (notificationId) => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.filter((notification) => notification.id !== notificationId)
+    );
+  };
+
+  const toggleNotificationBox = () => {
+    setIsNotificationOpen(!isNotificationOpen);
   };
 
   const cardBaseStyles = `
@@ -166,6 +214,62 @@ const Home = () => {
       >
         Get started by using the sidebar navigation.
       </motion.p>
+
+      <div className="fixed bottom-4 right-4 z-50">
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.2 }}
+        >
+          <button
+            onClick={toggleNotificationBox}
+            className="bg-yellow-200 border border-yellow-500 rounded-full p-2 shadow-md hover:bg-yellow-300"
+          >
+            <FaBell className="text-yellow-700" size={20} />
+            {notifications.length > 0 && (
+              <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+
+          {isNotificationOpen && (
+            <motion.div
+              className="absolute bottom-full mb-2 right-0 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden w-80"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="p-4 border-b">
+                <h5 className="font-semibold">Expiring Renewals</h5>
+              </div>
+              {notifications.length > 0 ? (
+                <ul className="overflow-y-auto max-h-60">
+                  {notifications.map((notification) => (
+                    <li key={notification.id} className="p-3 border-b last:border-b-0 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold">{notification.vehicleNumber}</p>
+                        <p className="text-xs text-gray-600">Expires: {notification.expiryDate}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCloseNotification(notification.id)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <FaTimesCircle size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="p-4 text-gray-700 text-center">No expiring renewals.</div>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
     </motion.div>
   );
 };
