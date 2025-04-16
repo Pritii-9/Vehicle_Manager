@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Card from "../Card";
+
 
 const VehicleMgt = ({
   editVehicleId,
@@ -8,9 +10,16 @@ const VehicleMgt = ({
   setShowRenewalForm,
   setShowRenewalVehicleList,
   setShowVehicleList,
-  setVehicles
+  setVehicles,
+  setVehicleInfo,
+  setShowDriverForm,
+  setShowDriverList,
+  setDrivers,
+  setDriverInfo,
+  fetchVehicles,
+  fetchDrivers
 }) => {
-  const [vehicleInfo, setVehicleInfo] = useState({
+  const [vehicleInfoLocal, setVehicleInfoLocal] = useState({
     Vehiclenumber: "",
     OwnerName: "",
     VehicleName: "",
@@ -20,13 +29,22 @@ const VehicleMgt = ({
     year: "",
     mileage: "",
   });
+  const [driverInfoLocal, setDriverInfoLocal] = useState({
+    DriverName: "",
+    DriverAge: "",
+    DriverLicense: "",
+    Contact: "",
+  });
+  const [showDriverTable, setShowDriverTable] = useState(false); // State to control driver table visibility
 
   useEffect(() => {
     if (editVehicleId) {
       const fetchVehicleForEdit = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/vehicles/${editVehicleId}`);
-          setVehicleInfo(response.data);
+          const response = await axios.get(
+            `http://localhost:5000/api/vehicles/${editVehicleId}`
+          );
+          setVehicleInfoLocal(response.data);
         } catch (error) {
           console.error("Error fetching vehicle for edit:", error);
           alert("Failed to fetch vehicle data for editing.");
@@ -34,7 +52,7 @@ const VehicleMgt = ({
       };
       fetchVehicleForEdit();
     } else {
-      setVehicleInfo({
+      setVehicleInfoLocal({
         Vehiclenumber: "",
         OwnerName: "",
         VehicleName: "",
@@ -47,36 +65,41 @@ const VehicleMgt = ({
     }
   }, [editVehicleId]);
 
-  const handleInputChange = (e) => {
+  const handleVehicleInputChange = (e) => {
     const { name, value } = e.target;
-    setVehicleInfo({ ...vehicleInfo, [name]: value });
+    setVehicleInfoLocal({ ...vehicleInfoLocal, [name]: value });
+  };
+
+  const handleDriverInputChange = (e) => {
+    const { name, value } = e.target;
+    setDriverInfoLocal({ ...driverInfoLocal, [name]: value });
   };
 
   const handleAddVehicle = async () => {
     if (
-      !vehicleInfo.Vehiclenumber ||
-      !vehicleInfo.OwnerName ||
-      !vehicleInfo.VehicleName ||
-      !vehicleInfo.VehicleType ||
-      !vehicleInfo.capacity ||
-      !vehicleInfo.FuelType ||
-      !vehicleInfo.year ||
-      !vehicleInfo.mileage
+      !vehicleInfoLocal.Vehiclenumber ||
+      !vehicleInfoLocal.OwnerName ||
+      !vehicleInfoLocal.VehicleName ||
+      !vehicleInfoLocal.VehicleType ||
+      !vehicleInfoLocal.capacity ||
+      !vehicleInfoLocal.FuelType ||
+      !vehicleInfoLocal.year ||
+      !vehicleInfoLocal.mileage
     ) {
-      alert("Please fill out all fields before adding the vehicle.");
+      alert("Please fill out all Vehicle fields before adding the vehicle.");
       return;
     }
 
     try {
-      console.log("Vehicle Info to Post:", vehicleInfo);
+      console.log("Vehicle Info to Post:", vehicleInfoLocal);
       const response = await axios.post(
         "http://localhost:5000/api/vehicles",
-        vehicleInfo
+        vehicleInfoLocal
       );
       console.log("Response from add vehicle:", response);
-      setVehicles(prevVehicles => [...prevVehicles, response.data]);
+      setVehicles((prevVehicles) => [...prevVehicles, response.data]);
       alert("Vehicle added successfully!");
-      setVehicleInfo({
+      setVehicleInfoLocal({
         Vehiclenumber: "",
         OwnerName: "",
         VehicleName: "",
@@ -88,6 +111,10 @@ const VehicleMgt = ({
       });
       setShowAddVehicleForm(false);
       setShowVehicleList(true);
+      if (setVehicleInfo) {
+        setVehicleInfo({});
+      }
+      fetchVehicles();
     } catch (error) {
       console.error("Error adding vehicle:", error);
       if (error.response) {
@@ -102,13 +129,13 @@ const VehicleMgt = ({
     if (!editVehicleId) return;
 
     try {
-      console.log("Vehicle Info to Update:", vehicleInfo);
+      console.log("Vehicle Info to Update:", vehicleInfoLocal);
       const response = await axios.put(
         `http://localhost:5000/api/vehicles/${editVehicleId}`,
-        vehicleInfo
+        vehicleInfoLocal
       );
       console.log("Response from update vehicle:", response);
-      setVehicles(prevVehicles =>
+      setVehicles((prevVehicles) =>
         prevVehicles.map((vehicle) =>
           vehicle._id === editVehicleId ? response.data : vehicle
         )
@@ -117,6 +144,10 @@ const VehicleMgt = ({
       alert("Vehicle updated successfully!");
       setShowAddVehicleForm(false);
       setShowVehicleList(true);
+      if (setVehicleInfo) {
+        setVehicleInfo({});
+      }
+      fetchVehicles();
     } catch (error) {
       console.error("Error updating vehicle:", error);
       if (error.response) {
@@ -124,6 +155,45 @@ const VehicleMgt = ({
         console.error("Status Code:", error.response.status);
       }
       alert("Failed to update vehicle.");
+    }
+  };
+
+  const handleAddDriver = async () => {
+    if (
+      !driverInfoLocal.DriverName ||
+      !driverInfoLocal.DriverAge ||
+      !driverInfoLocal.DriverLicense ||
+      !driverInfoLocal.Contact
+    ) {
+      alert("Please fill out all Driver fields before adding.");
+      return;
+    }
+
+    try {
+      console.log("Driver Info to Post:", driverInfoLocal);
+      const response = await axios.post("http://localhost:5000/api/drivers", driverInfoLocal);
+
+      alert("Driver added successfully!");
+      setDriverInfoLocal({
+        DriverName: "",
+        DriverAge: "",
+        DriverLicense: "",
+        Contact: "",
+      });
+      setShowDriverForm(false);
+      setShowDriverList(true);
+      setShowDriverTable(false); // Hide the driver table after adding
+      if (setDriverInfo) {
+        setDriverInfo({});
+      }
+      fetchDrivers();
+    } catch (error) {
+      console.error("Error adding driver:", error);
+      if (error.response) {
+        console.error("Server Response:", error.response.data);
+        console.error("Status Code:", error.response.status);
+      }
+      alert("Failed to add driver. Check console for details.");
     }
   };
 
@@ -139,13 +209,18 @@ const VehicleMgt = ({
             setShowRenewalForm(false);
             setShowRenewalVehicleList(false);
             setShowVehicleList(true);
+            setShowDriverForm(false);
+            setShowDriverList(false);
+            setShowDriverTable(false); // Hide driver table
           }}
-          className="bg-[#5046e4] text-white px-4 py-2 rounded hover:bg-blue transition"
+          className="bg-[#5046e4] text-white px-3 py-1 rounded hover:bg-blue transition text-sm"
         >
           Vehicle List
         </button>
       </div>
-      <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg">
+
+      {/* Vehicle Form */}
+      <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg mb-8">
         <div>
           <label className="block font-semibold mb-2 text-gray-600">
             Vehicle Number
@@ -153,8 +228,8 @@ const VehicleMgt = ({
           <input
             type="text"
             name="Vehiclenumber"
-            value={vehicleInfo.Vehiclenumber}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.Vehiclenumber}
+            onChange={handleVehicleInputChange}
             placeholder="Vehicle Number"
             required
             className="border border-gray-300 rounded w-full p-2"
@@ -167,8 +242,8 @@ const VehicleMgt = ({
           <input
             type="text"
             name="OwnerName"
-            value={vehicleInfo.OwnerName}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.OwnerName}
+            onChange={handleVehicleInputChange}
             placeholder="Owner Name"
             className="border border-gray-300 rounded w-full p-2"
           />
@@ -180,8 +255,8 @@ const VehicleMgt = ({
           <input
             type="text"
             name="VehicleName"
-            value={vehicleInfo.VehicleName}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.VehicleName}
+            onChange={handleVehicleInputChange}
             placeholder="Vehicle Name"
             className="border border-gray-300 rounded w-full p-2"
           />
@@ -192,8 +267,8 @@ const VehicleMgt = ({
           </label>
           <select
             name="VehicleType"
-            value={vehicleInfo.VehicleType}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.VehicleType}
+            onChange={handleVehicleInputChange}
             required
             className="border border-gray-300 rounded w-full p-2"
           >
@@ -213,8 +288,8 @@ const VehicleMgt = ({
           <input
             type="text"
             name="capacity"
-            value={vehicleInfo.capacity}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.capacity}
+            onChange={handleVehicleInputChange}
             placeholder="Enter Capacity of Vehicle"
             className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           />
@@ -226,8 +301,8 @@ const VehicleMgt = ({
           </label>
           <select
             name="FuelType"
-            value={vehicleInfo.FuelType}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.FuelType}
+            onChange={handleVehicleInputChange}
             className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           >
             <option value="">Select Fuel Type</option>
@@ -246,8 +321,8 @@ const VehicleMgt = ({
           <input
             type="number"
             name="year"
-            value={vehicleInfo.year}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.year}
+            onChange={handleVehicleInputChange}
             placeholder="Enter Manufacturing Year"
             required
             className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -260,8 +335,8 @@ const VehicleMgt = ({
           <input
             type="number"
             name="mileage"
-            value={vehicleInfo.mileage}
-            onChange={handleInputChange}
+            value={vehicleInfoLocal.mileage}
+            onChange={handleVehicleInputChange}
             placeholder="Enter Mileage in km"
             required
             className="border border-gray-300 rounded w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -271,11 +346,94 @@ const VehicleMgt = ({
         <button
           type="button"
           onClick={editVehicleId ? handleUpdateVehicle : handleAddVehicle}
-          className="mt-4 bg-[#5046e4] text-white px-6 py-2 rounded shadow-md hover:bg-blue"
+          className="mt-4 bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue text-sm"
         >
           {editVehicleId ? "Update Vehicle" : "Add Vehicle"}
         </button>
       </form>
+
+      {/* Driver Details Form */}
+      <div className="bg-white p-6 rounded-lg shadow-lg mt-8 relative">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Driver Details</h2>
+        <button
+          onClick={() => {
+            setShowDriverList(true);
+            setShowAddVehicleForm(false);
+            setShowDriverTable(true); // Show driver table
+          }}
+          className="absolute top-4 right-4 bg-[#5046e4] text-white px-3 py-1 rounded hover:bg-blue transition text-sm"
+        >
+          Driver List
+        </button>
+        <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label className="block font-semibold mb-2 text-gray-600">
+              Driver Name
+            </label>
+            <input
+              type="text"
+              name="DriverName"
+              value={driverInfoLocal.DriverName}
+              onChange={handleDriverInputChange}
+              placeholder="Driver Name"
+              required
+              className="border border-gray-300 rounded w-full p-2"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-2 text-gray-600">
+              Driver Age
+            </label>
+            <input
+              type="number"
+              name="DriverAge"
+              value={driverInfoLocal.DriverAge}
+              onChange={handleDriverInputChange}
+              placeholder="Driver Age"
+              required
+              className="border border-gray-300 rounded w-full p-2"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-2 text-gray-600">
+              Driver License
+            </label>
+            <input
+              type="text"
+              name="DriverLicense"
+              value={driverInfoLocal.DriverLicense}
+              onChange={handleDriverInputChange}
+              placeholder="Driver License"
+              required
+              className="border border-gray-300 rounded w-full p-2"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-2 text-gray-600">
+              Contact
+            </label>
+            <input
+              type="text"
+              name="Contact"
+              value={driverInfoLocal.Contact}
+              onChange={handleDriverInputChange}
+              placeholder="Contact Number"
+              required
+              className="border border-gray-300 rounded w-full p-2"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAddDriver}
+            className="mt-4 bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue  text-sm"
+          >
+            Add Driver
+          </button>
+        </form>
+      </div>
+      {showDriverTable && (
+        <Card data={[]} type="driver" />
+      )}
     </div>
   );
 };

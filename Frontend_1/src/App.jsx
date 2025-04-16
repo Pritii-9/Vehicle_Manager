@@ -120,7 +120,7 @@ const App = () => {
       />
 
       <main className="flex-1 bg-gray-100">
-        <header className="bg-purple-800 text-white p-6 shadow-md flex items-center justify-between relative">
+        <header className="bg-gradient-to-r from-purple-800 to-purple-900 text-white p-6 shadow-lg flex items-center justify-between relative transition-all duration-300 hover:shadow-lg hover:scale-[1.01] rounded-b-lg">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
         <HomeSection
@@ -245,3 +245,4 @@ const App = () => {
 };
 
 export default App;
+

@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-
-
 const LogSheets = ({ setShowLogSheetList }) => {
   const [logSheetInfo, setLogSheetInfo] = useState({
     vehicleNumber: "",
@@ -13,15 +11,41 @@ const LogSheets = ({ setShowLogSheetList }) => {
     closingReading: "",
     total: "",
     driver: "",
-    diselQuantity: "", 
-    diselAmount: "",
+    dieselQuantity: "",
+    dieselAmount: "",
     remark: "",
   });
   const [logSheets, setLogSheets] = useState([]);
   const [editLogSheetId, setEditLogSheetId] = useState(null);
   const [showList, setShowList] = useState(false);
+  const [drivers, setDrivers] = useState([]); // State to store drivers
+  const [vehicles, setVehicles] = useState([]); // State to store vehicle numbers
 
   useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/drivers");
+        setDrivers(response.data);
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+        alert("Failed to fetch drivers list.");
+      }
+    };
+
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/vehicles");
+        // Extract vehicle numbers from the response
+        const vehicleNumbers = response.data.map((vehicle) => vehicle.Vehiclenumber);
+        setVehicles(vehicleNumbers);
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
+        alert("Failed to fetch vehicles list.");
+      }
+    };
+
+    fetchDrivers(); // Fetch drivers when the component loads
+    fetchVehicles(); // Fetch vehicles
     if (showList) {
       fetchLogSheets();
     }
@@ -38,7 +62,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
 
   const handleLogSheetInputChange = (e) => {
     const { name, value } = e.target;
-    setLogSheetInfo(prevInfo => ({ ...prevInfo, [name]: value }));
+    setLogSheetInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
   };
 
   const handleSaveLogSheet = async () => {
@@ -50,13 +74,13 @@ const LogSheets = ({ setShowLogSheetList }) => {
           logSheetInfo
         );
         alert("Log sheet updated successfully!");
-        setLogSheets(prevLogSheets =>
-          prevLogSheets.map(ls => (ls._id === editLogSheetId ? { ...response.data } : ls))
+        setLogSheets((prevLogSheets) =>
+          prevLogSheets.map((ls) => (ls._id === editLogSheetId ? { ...response.data } : ls))
         );
       } else {
         response = await axios.post("http://localhost:5000/api/logsheet", logSheetInfo);
         alert("Log sheet saved successfully!");
-        setLogSheets(prevLogSheets => [...prevLogSheets, { ...response.data }]);
+        setLogSheets((prevLogSheets) => [...prevLogSheets, { ...response.data }]);
       }
       setLogSheetInfo({
         vehicleNumber: "",
@@ -107,7 +131,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
     try {
       await axios.delete(`http://localhost:5000/api/logsheet/${id}`);
       alert("Log sheet deleted successfully!");
-      setLogSheets(prevLogSheets => prevLogSheets.filter(ls => ls._id !== id));
+      setLogSheets((prevLogSheets) => prevLogSheets.filter((ls) => ls._id !== id));
     } catch (error) {
       console.error("Error deleting log sheet:", error);
       alert("Failed to delete log sheet.");
@@ -130,15 +154,20 @@ const LogSheets = ({ setShowLogSheetList }) => {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="vehicleNumber">
             Vehicle Number
           </label>
-          <input
-            type="text"
+          <select
             name="vehicleNumber"
-            placeholder="Vehicle Number"
             value={logSheetInfo.vehicleNumber}
             onChange={handleLogSheetInputChange}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="vehicleNumber"
-          />
+          >
+            <option value="">Select Vehicle Number</option>
+            {vehicles.map((number) => (
+              <option key={number} value={number}>
+                {number}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerName">
@@ -214,15 +243,20 @@ const LogSheets = ({ setShowLogSheetList }) => {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="driver">
             Driver
           </label>
-          <input
-            type="text"
+          <select
             name="driver"
-            placeholder="Driver"
             value={logSheetInfo.driver}
             onChange={handleLogSheetInputChange}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="driver"
-          />
+          >
+            <option value="">Select Driver</option>
+            {drivers.map((driver) => (
+              <option key={driver._id} value={driver.DriverName}>
+                {driver.DriverName}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="dieselQuantity">
@@ -230,7 +264,7 @@ const LogSheets = ({ setShowLogSheetList }) => {
           </label>
           <input
             type="number"
-            name="diselQuantity"
+            name="dieselQuantity"
             placeholder="Diesel Quantity"
             value={logSheetInfo.dieselQuantity}
             onChange={handleLogSheetInputChange}

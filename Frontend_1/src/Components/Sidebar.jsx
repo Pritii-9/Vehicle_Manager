@@ -86,7 +86,7 @@ const Sidebar = ({
   };
 
   return (
-    <aside className="w-1/4 bg-white text-black-800 p-4 h-screen flex-shrink-0">
+    <aside className="w-1/6 bg-white text-black-800 p-4 h-screen flex-shrink-0">
       <h2 className="text-lg font-bold cursor-pointer" onClick={handleHomeClick}>Home</h2>
       <ul className="mt-4 text-font-semibold">
         <MenuItem label="Add Vehicle" onClick={handleAddVehicleClick} />
