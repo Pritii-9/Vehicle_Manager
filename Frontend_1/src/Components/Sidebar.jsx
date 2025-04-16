@@ -89,7 +89,7 @@ const Sidebar = ({
     <aside className="w-1/6 bg-white text-black-800 p-4 h-screen flex-shrink-0">
       <h2 className="text-lg font-bold cursor-pointer" onClick={handleHomeClick}>Home</h2>
       <ul className="mt-4 text-font-semibold">
-        <MenuItem label="Add Vehicle" onClick={handleAddVehicleClick} />
+        <MenuItem label="Add Details" onClick={handleAddVehicleClick} />
         <MenuItem label="Add Renewal" onClick={handleAddRenewalClick} />
         <MenuItem label="Log sheet" onClick={handleLogSheetClick} />
         <MenuItem label="Billing Log Sheet" onClick={handleBillingFormClick} /> {/* Corrected prop name */}

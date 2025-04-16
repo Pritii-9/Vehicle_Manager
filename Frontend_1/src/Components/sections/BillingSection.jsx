@@ -27,7 +27,7 @@ const BillingSection = ({
       <div className="p-6">
         <div className="bg-white shadow rounded-md p-4">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Billing List</h2>
-          {bills.length > 0 ? <Card bills={bills} /> : <p>No bills available.</p>}
+          {bills.length > 0 ? <Card data={bills} type="bill" /> : <p>No bills available.</p>}
         </div>
       </div>
     )}

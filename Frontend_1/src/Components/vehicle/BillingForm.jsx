@@ -16,7 +16,7 @@ const BillingForm = ({ setShowBillingList, onBillSubmit, onShowBillingListClick 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBillInfo({ ...billInfo, [name]: value });
-    setFormErrors({ ...formErrors, [name]: "" }); 
+    setFormErrors({ ...formErrors, [name]: "" });
   };
 
   const validateForm = () => {
@@ -56,7 +56,7 @@ const BillingForm = ({ setShowBillingList, onBillSubmit, onShowBillingListClick 
     try {
       console.log("Billing data to be sent:", billInfo);
       const response = await axios.post(
-        "http://localhost:5000/api/bills", 
+        "http://localhost:5000/api/bills",
         {
           ...billInfo,
           gst: billInfo.gst.endsWith('%') ? parseFloat(billInfo.gst.slice(0, -1)) : parseFloat(billInfo.gst) || 0,
@@ -76,6 +76,10 @@ const BillingForm = ({ setShowBillingList, onBillSubmit, onShowBillingListClick 
         date: "",
       });
       setFormErrors({});
+      // After successfully adding a bill, navigate to the bill list
+      if (onShowBillingListClick) {
+        onShowBillingListClick();
+      }
     } catch (error) {
       console.error("Error adding bill:", error);
       let errorMessage = "Failed to add bill. See console for details.";
@@ -100,7 +104,7 @@ const BillingForm = ({ setShowBillingList, onBillSubmit, onShowBillingListClick 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Add Bill</h2>
         <button
-          onClick={onShowBillingListClick} 
+          onClick={onShowBillingListClick}
           className="bg-[#5046e4] text-white px-4 py-2 rounded hover:bg-blue transition"
         >
           Bill List

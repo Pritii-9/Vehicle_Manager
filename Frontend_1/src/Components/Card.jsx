@@ -20,7 +20,7 @@ const Card = ({
 
   if (type === "vehicle") {
     return (
-      <div className="bg-white shadow rounded-md p-4">
+      <div className="bg-gray-100 shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Vehicle List</h3>
         <table className="table-auto w-full border-collapse border border-gray-300 text-left">
           <thead>
@@ -219,7 +219,7 @@ const Card = ({
         </table>
       </div>
     );
-  } else if (type === "billing") {
+  } else if (type === "bill") {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Billing List</h3>
@@ -264,38 +264,39 @@ const Card = ({
       </div>
     );
   } else {
-        return (
-            <div className="bg-white shadow rounded-md p-4">
-              <h3 className="text-lg font-semibold mb-2">Data List</h3>
-              <table className="table-auto w-full border-collapse border border-gray-300 text-left">
-                <thead>
-                  <tr>
-                    {Object.keys(data[0]).map((key) => (
-                      <th key={key} className="px-4 py-2 border-b border-gray-300">
-                        {key}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, index) => (
-                    <tr key={index}>
-                      {Object.values(item).map((value, vIndex) => {
-                        let displayValue = value;
-                        if (value instanceof Date) {
-                          displayValue = value.toLocaleDateString();
-                        }
-                        return (
-                        <td key={vIndex} className="px-4 py-2 border-b border-gray-300">
-                          {displayValue}
-                        </td>
-                      )})}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-        )
+    return (
+      <div className="bg-white shadow rounded-md p-4">
+        <h3 className="text-lg font-semibold mb-2">Data List</h3>
+        <table className="table-auto w-full border-collapse border border-gray-300 text-left">
+          <thead>
+            <tr>
+              {Object.keys(data[0]).map((key) => (
+                <th key={key} className="px-4 py-2 border-b border-gray-300">
+                  {key}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={index}>
+                {Object.values(item).map((value, vIndex) => {
+                  let displayValue = value;
+                  if (value instanceof Date) {
+                    displayValue = value.toLocaleDateString();
+                  }
+                  return (
+                    <td key={vIndex} className="px-4 py-2 border-b border-gray-300">
+                      {displayValue}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   }
 };
 

@@ -119,7 +119,7 @@ const App = () => {
         setShowBillingList={setShowBillingList}
       />
 
-      <main className="flex-1 bg-gray-100">
+      <main className="flex-1   h-full bg-gradient-to-br from-gray-100 to-gray-200">
         <header className="bg-gradient-to-r from-purple-800 to-purple-900 text-white p-6 shadow-lg flex items-center justify-between relative transition-all duration-300 hover:shadow-lg hover:scale-[1.01] rounded-b-lg">
           <h1 className="text-2xl font-bold">Vehicle Manager</h1>
         </header>
@@ -222,21 +222,26 @@ const App = () => {
             showBillingForm,
             showBillingList,
             handleBillSubmit: () => handleBillSubmit(setBills, setDisplayedRate),
+            
+              
+            
             handleShowBillingListClick: () => handleShowBillingListClick(
-              setShowHome,
-              setShowAddVehicleForm,
-              setShowVehicleList,
-              setShowRenewalForm,
-              setShowRenewalVehicleList,
-              setShowLogSheetForm,
-              setShowLogSheetList,
-              setShowBillingForm,
-              setShowBillingList
-            ),
-            handleInputChange: () => handleInputChange(setBillInfo),
-            handleAddBill: () => handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
-            billInfo,
-            bills,
+              showBillingList(true),
+            )
+            //   setShowHome,
+            //   setShowAddVehicleForm,
+            //   setShowVehicleList,
+            //   setShowRenewalForm,
+            //   setShowRenewalVehicleList,
+            //   setShowLogSheetForm,
+            //   setShowLogSheetList,
+            //   setShowBillingForm,
+            //   setShowBillingList
+            // ),
+            // handleInputChange: () => handleInputChange(setBillInfo),
+            // handleAddBill: () => handleAddBill(billInfo, setBills, setDisplayedRate, setShowBillingForm),
+            // billInfo,
+            // bills,
           }}
         />
       </main>

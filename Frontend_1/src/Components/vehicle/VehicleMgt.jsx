@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Card from "../Card";
-
+import DriverSection from "../sections/DriverSection"; // Assuming DriverSection is in the same directory
 
 const VehicleMgt = ({
   editVehicleId,
@@ -13,11 +14,9 @@ const VehicleMgt = ({
   setVehicles,
   setVehicleInfo,
   setShowDriverForm,
-  setShowDriverList,
+  setShowDriverList: setAppShowDriverListFromProps, // Renamed to avoid confusion
   setDrivers,
   setDriverInfo,
-  fetchVehicles,
-  fetchDrivers
 }) => {
   const [vehicleInfoLocal, setVehicleInfoLocal] = useState({
     Vehiclenumber: "",
@@ -35,7 +34,41 @@ const VehicleMgt = ({
     DriverLicense: "",
     Contact: "",
   });
-  const [showDriverTable, setShowDriverTable] = useState(false); // State to control driver table visibility
+  const [showLocalDriverForm, setShowLocalDriverForm] = useState(false);
+  const [showLocalDriverList, setShowLocalDriverList] = useState(false);
+  const [localDrivers, setLocalDrivers] = useState([]);
+  const [localDriverInfo, setLocalDriverInfo] = useState({
+    DriverName: "",
+    DriverAge: "",
+    DriverLicense: "",
+    Contact: "",
+    _id: null,
+  });
+
+  const fetchVehicles = useCallback(async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/vehicles");
+      setVehicles(response.data);
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+      alert("Failed to fetch vehicles.");
+    }
+  }, [setVehicles]);
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/drivers");
+      setLocalDrivers(response.data);
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+      alert("Failed to fetch drivers.");
+    }
+  }, [setLocalDrivers]);
+
+  useEffect(() => {
+    fetchVehicles();
+    fetchDrivers();
+  }, [fetchVehicles, fetchDrivers]);
 
   useEffect(() => {
     if (editVehicleId) {
@@ -68,11 +101,6 @@ const VehicleMgt = ({
   const handleVehicleInputChange = (e) => {
     const { name, value } = e.target;
     setVehicleInfoLocal({ ...vehicleInfoLocal, [name]: value });
-  };
-
-  const handleDriverInputChange = (e) => {
-    const { name, value } = e.target;
-    setDriverInfoLocal({ ...driverInfoLocal, [name]: value });
   };
 
   const handleAddVehicle = async () => {
@@ -158,42 +186,76 @@ const VehicleMgt = ({
     }
   };
 
-  const handleAddDriver = async () => {
-    if (
-      !driverInfoLocal.DriverName ||
-      !driverInfoLocal.DriverAge ||
-      !driverInfoLocal.DriverLicense ||
-      !driverInfoLocal.Contact
-    ) {
-      alert("Please fill out all Driver fields before adding.");
-      return;
-    }
+  const handleShowDriverForm = () => {
+    setShowLocalDriverForm(true);
+    setShowLocalDriverList(false);
+    setLocalDriverInfo({
+      DriverName: "",
+      DriverAge: "",
+      DriverLicense: "",
+      Contact: "",
+      _id: null,
+    });
+  };
 
+  const handleShowEditDriverForm = (driver) => {
+    setShowLocalDriverForm(true);
+    setLocalDrivers(false);
+    setLocalDriverInfo(driver);
+  };
+
+  const handleShowDriverList = () => {
+    setShowLocalDriverList(true);
+    setShowLocalDriverForm(false);
+  };
+
+  const handleAddDriver = async (driverData) => {
     try {
-      console.log("Driver Info to Post:", driverInfoLocal);
-      const response = await axios.post("http://localhost:5000/api/drivers", driverInfoLocal);
-
+      const response = await axios.post("http://localhost:5000/api/drivers", driverData);
+      setLocalDrivers((prevDrivers) => [...prevDrivers, response.data]);
       alert("Driver added successfully!");
-      setDriverInfoLocal({
-        DriverName: "",
-        DriverAge: "",
-        DriverLicense: "",
-        Contact: "",
-      });
-      setShowDriverForm(false);
-      setShowDriverList(true);
-      setShowDriverTable(false); // Hide the driver table after adding
-      if (setDriverInfo) {
-        setDriverInfo({});
-      }
+      setShowLocalDriverForm(false);
       fetchDrivers();
     } catch (error) {
       console.error("Error adding driver:", error);
-      if (error.response) {
-        console.error("Server Response:", error.response.data);
-        console.error("Status Code:", error.response.status);
+      alert("Failed to add driver.");
+    }
+  };
+
+  const handleUpdateDriver = async (id, driverData) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/api/drivers/${id}`, driverData);
+      setLocalDrivers((prevDrivers) =>
+        prevDrivers.map((driver) => (driver._id === id ? response.data : driver))
+      );
+      alert("Driver updated successfully!");
+      setShowLocalDriverForm(false);
+      fetchDrivers();
+    } catch (error) {
+      console.error("Error updating driver:", error);
+      alert("Failed to update driver.");
+    }
+  };
+
+  const handleSaveDriver = (driverData) => {
+    if (driverData._id) {
+      handleUpdateDriver(driverData._id, driverData);
+    } else {
+      handleAddDriver(driverData);
+    }
+  };
+
+  const handleDeleteDriver = async (id) => {
+    if (window.confirm("Are you sure you want to delete this driver?")) {
+      try {
+        await axios.delete(`http://localhost:5000/api/drivers/${id}`);
+        setLocalDrivers((prevDrivers) => prevDrivers.filter((driver) => driver._id !== id));
+        alert("Driver deleted successfully!");
+        fetchDrivers();
+      } catch (error) {
+        console.error("Error deleting driver:", error);
+        alert("Failed to delete driver.");
       }
-      alert("Failed to add driver. Check console for details.");
     }
   };
 
@@ -209,9 +271,8 @@ const VehicleMgt = ({
             setShowRenewalForm(false);
             setShowRenewalVehicleList(false);
             setShowVehicleList(true);
-            setShowDriverForm(false);
-            setShowDriverList(false);
-            setShowDriverTable(false); // Hide driver table
+            setShowLocalDriverForm(false);
+            setShowLocalDriverList(false);
           }}
           className="bg-[#5046e4] text-white px-3 py-1 rounded hover:bg-blue transition text-sm"
         >
@@ -352,88 +413,38 @@ const VehicleMgt = ({
         </button>
       </form>
 
-      {/* Driver Details Form */}
-      <div className="bg-white p-6 rounded-lg shadow-lg mt-8 relative">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Driver Details</h2>
-        <button
-          onClick={() => {
-            setShowDriverList(true);
-            setShowAddVehicleForm(false);
-            setShowDriverTable(true); // Show driver table
-          }}
-          className="absolute top-4 right-4 bg-[#5046e4] text-white px-3 py-1 rounded hover:bg-blue transition text-sm"
-        >
-          Driver List
-        </button>
-        <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block font-semibold mb-2 text-gray-600">
-              Driver Name
-            </label>
-            <input
-              type="text"
-              name="DriverName"
-              value={driverInfoLocal.DriverName}
-              onChange={handleDriverInputChange}
-              placeholder="Driver Name"
-              required
-              className="border border-gray-300 rounded w-full p-2"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-2 text-gray-600">
-              Driver Age
-            </label>
-            <input
-              type="number"
-              name="DriverAge"
-              value={driverInfoLocal.DriverAge}
-              onChange={handleDriverInputChange}
-              placeholder="Driver Age"
-              required
-              className="border border-gray-300 rounded w-full p-2"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-2 text-gray-600">
-              Driver License
-            </label>
-            <input
-              type="text"
-              name="DriverLicense"
-              value={driverInfoLocal.DriverLicense}
-              onChange={handleDriverInputChange}
-              placeholder="Driver License"
-              required
-              className="border border-gray-300 rounded w-full p-2"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-2 text-gray-600">
-              Contact
-            </label>
-            <input
-              type="text"
-              name="Contact"
-              value={driverInfoLocal.Contact}
-              onChange={handleDriverInputChange}
-              placeholder="Contact Number"
-              required
-              className="border border-gray-300 rounded w-full p-2"
-            />
-          </div>
+      {/* Driver Section */}
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Manage Drivers</h2>
+        <div className="flex gap-4 mb-4">
           <button
-            type="button"
-            onClick={handleAddDriver}
-            className="mt-4 bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue  text-sm"
+            onClick={handleShowDriverForm}
+            className="bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue text-sm"
           >
             Add Driver
           </button>
-        </form>
+          <button
+            onClick={handleShowDriverList}
+            className="bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue text-sm"
+          >
+            Driver List
+          </button>
+        </div>
+
+        <DriverSection
+          showDriverForm={showLocalDriverForm}
+          showDriverList={showLocalDriverList}
+          setShowDriverForm={setShowLocalDriverForm}
+          setShowDriverList={setShowLocalDriverList}
+          drivers={localDrivers}
+          setDrivers={setLocalDrivers}
+          driverInfo={localDriverInfo}
+          setDriverInfo={setLocalDriverInfo}
+          handleSaveDriver={handleSaveDriver}
+          handleEditDriver={handleShowEditDriverForm}
+          handleDeleteDriver={handleDeleteDriver}
+        />
       </div>
-      {showDriverTable && (
-        <Card data={[]} type="driver" />
-      )}
     </div>
   );
 };

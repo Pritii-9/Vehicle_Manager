@@ -183,7 +183,7 @@ const Home = ({ renewalVehicles }) => {
       </motion.div>
 
       <motion.h1
-        className="text-4xl font-bold mb-8 text-purple-800 shadow-sm"
+        className="text-4xl font-bold mt-20 mb-8 text-purple-800 shadow-sm"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}

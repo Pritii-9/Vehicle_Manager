@@ -1,25 +1,26 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Card from "../Card";
 
 const DriverSection = ({
   showDriverForm,
   showDriverList,
-  setShowDriverForm: setAppShowDriverForm,
-  setShowDriverList: setAppShowDriverList,
+  setShowDriverForm,
+  setShowDriverList,
   drivers,
   setDrivers,
   driverInfo,
   setDriverInfo,
-  fetchDrivers,
-  handleEditDriver,
-  handleDeleteDriver,
+  handleSaveDriver,
+  handleEditDriver: handleEditDriverProp,
+  handleDeleteDriver: handleDeleteDriverProp,
 }) => {
   const [driverInfoLocal, setDriverInfoLocal] = useState({
     DriverName: "",
     DriverAge: "",
     DriverLicense: "",
     Contact: "",
+    _id: null,
   });
 
   useEffect(() => {
@@ -31,52 +32,31 @@ const DriverSection = ({
     setDriverInfoLocal({ ...driverInfoLocal, [name]: value });
   };
 
-  const handleAddDriver = async () => {
-    try {
-      console.log("Driver Info to Post:", driverInfoLocal);
-      const response = await axios.post("http://localhost:5000/api/drivers", driverInfoLocal);
-      console.log("Response from add driver:", response);
-      setDrivers((prevDrivers) => [...prevDrivers, response.data]);
-      alert("Driver added successfully!");
-      setDriverInfo({
-        DriverName: "",
-        DriverAge: "",
-        DriverLicense: "",
-        Contact: "",
-      });
-      setAppShowDriverForm(false);
-      setAppShowDriverList(true);
-      fetchDrivers();
-    } catch (error) {
-      console.error("Error adding driver:", error);
-      if (error.response) {
-        console.error("Server Response:", error.response.data);
-        console.error("Status Code:", error.response.status);
-      }
-      alert("Failed to add driver. Check console for details.");
-    }
-  };
-
-  const handleUpdateDriver = async (id) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/api/drivers/${id}`, driverInfoLocal);
-      setDrivers(drivers.map((driver) => (driver._id === id ? response.data : driver)));
-      alert("Driver updated successfully!");
-      setAppShowDriverForm(false);
-      setAppShowDriverList(true);
-      fetchDrivers();
-    } catch (error) {
-      console.error("Error updating driver:", error);
-      alert("Failed to update driver.");
-    }
-  };
-
   const handleSubmitDriver = () => {
-    if (driverInfoLocal._id) {
-      handleUpdateDriver(driverInfoLocal._id);
-    } else {
-      handleAddDriver();
-    }
+    handleSaveDriver(driverInfoLocal);
+    resetForm();
+  };
+
+  const handleEditLocalDriver = (driver) => {
+    setDriverInfoLocal(driver);
+    setShowDriverForm(true);
+    setShowDriverList(false);
+  };
+
+  const handleDeleteLocalDriver = (id) => {
+    handleDeleteDriverProp(id);
+  };
+
+  const resetForm = () => {
+    setDriverInfoLocal({
+      DriverName: "",
+      DriverAge: "",
+      DriverLicense: "",
+      Contact: "",
+      _id: null,
+    });
+    setShowDriverForm(false);
+    setShowDriverList(true);
   };
 
   return (
@@ -150,6 +130,15 @@ const DriverSection = ({
             >
               {driverInfoLocal._id ? "Update Driver" : "Add Driver"}
             </button>
+            {driverInfoLocal._id && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="mt-4 bg-gray-300 text-gray-700 px-4 py-2 rounded shadow-md hover:bg-gray-400 text-sm"
+              >
+                Cancel
+              </button>
+            )}
           </form>
         </div>
       )}
@@ -160,8 +149,8 @@ const DriverSection = ({
             <Card
               data={drivers}
               type="driver"
-              handleEditDriver={handleEditDriver}
-              handleDeleteDriver={handleDeleteDriver}
+              handleEditDriver={handleEditLocalDriver}
+              handleDeleteDriver={handleDeleteLocalDriver}
             />
           ) : (
             <p>No drivers available.</p>

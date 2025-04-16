@@ -8,6 +8,7 @@ import vehicleRoutes from "./routes/vehicleRoutes.js";
 import renewalRoutes from "./routes/renewalRoutes.js";
 import logSheetRoutes from "./routes/logSheetRoutes.js"; 
 import billsRoutes from "./routes/bills.js";
+import driverRoutes  from "./routes/driverRoutes.js"
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/renewals", renewalRoutes); 
 app.use("/api/logsheet", logSheetRoutes); 
 app.use('/api/bills', billsRoutes);
+app.use('/api/drivers', driverRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
