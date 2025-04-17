@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import MenuItem from "./MenuItem";
 
 const Sidebar = ({
@@ -13,8 +13,14 @@ const Sidebar = ({
   setShowLogSheetList,
   setLogSheetInfo,
   setShowHome,
-  setShowBillingForm, // Make sure this prop is being passed from App.jsx
+  setShowBillingForm,
+  setShowBillingList,
+  setShowDriverForm,
+  setDriverInfo,
+  setShowDriverList,
 }) => {
+  const [showAddDetailsSubMenu, setShowAddDetailsSubMenu] = useState(false);
+
   const resetAllFormsAndLists = () => {
     setShowAddVehicleForm(false);
     setShowVehicleList(false);
@@ -22,9 +28,17 @@ const Sidebar = ({
     setShowRenewalVehicleList(false);
     setShowLogSheetForm(false);
     setShowLogSheetList(false);
-    setShowBillingForm(false); // Ensure billing form is also hidden
+    setShowBillingForm(false);
+    setShowBillingList(false);
+    setShowDriverForm(false);
+    setShowDriverList(false);
     setEditVehicleId(null);
-    setShowHome(true);
+    setShowAddDetailsSubMenu(false);
+    setShowHome(false);
+  };
+
+  const handleAddDetailsClick = () => {
+    setShowAddDetailsSubMenu(!showAddDetailsSubMenu);
   };
 
   const handleAddVehicleClick = () => {
@@ -43,6 +57,19 @@ const Sidebar = ({
     });
   };
 
+  const handleAddDriverClick = () => {
+    resetAllFormsAndLists();
+    setShowDriverForm(true);
+    setShowHome(false);
+    setDriverInfo({
+      DriverName: "",
+      DriverAge: "",
+      DriverLicense: "",
+      Contact: "",
+      _id: null,
+    });
+  };
+
   const handleAddRenewalClick = () => {
     resetAllFormsAndLists();
     setShowRenewalForm(true);
@@ -55,6 +82,8 @@ const Sidebar = ({
     });
   };
 
+
+
   const handleLogSheetClick = () => {
     resetAllFormsAndLists();
     setShowLogSheetForm(true);
@@ -62,21 +91,22 @@ const Sidebar = ({
     setShowHome(false);
     setLogSheetInfo({
       Vehiclenumber: "",
-      customerName: "",
-      location: "",
-      openingReading: "",
-      closingReading: "",
-      total: "",
-      driver: "",
-      diselQuantity: "",
-      diselAmount: "",
-      remark: "",
+      CustomerName: "",
+      Location: "",
+      OpeningReading: "",
+      ClosingReading: "",
+      Total: "",
+      Driver: "",
+      DieselQuantity: "",
+      DieselAmount: "",
+      Remark: "",
     });
   };
 
   const handleBillingFormClick = () => {
     resetAllFormsAndLists();
     setShowBillingForm(true);
+    setShowBillingList(false);
     setShowHome(false);
   };
 
@@ -87,12 +117,24 @@ const Sidebar = ({
 
   return (
     <aside className="w-1/6 bg-white text-black-800 p-4 h-screen flex-shrink-0">
-      <h2 className="text-lg font-bold cursor-pointer" onClick={handleHomeClick}>Home</h2>
-      <ul className="mt-4 text-font-semibold">
-        <MenuItem label="Add Details" onClick={handleAddVehicleClick} />
+      <h2 className="text-lg font-bold cursor-pointer" onClick={handleHomeClick}>
+        Home
+      </h2>
+      <ul className="mt-4 mt-2">
+        <div onClick={handleAddDetailsClick} className="cursor-pointer font-semibold">
+          Add Details
+        </div>
+        {showAddDetailsSubMenu && (
+          <ul className="ml-4 mt-2">
+            <MenuItem label="Add Vehicle" onClick={handleAddVehicleClick} />
+            <MenuItem label="Add Driver" onClick={handleAddDriverClick} />
+          </ul>
+        )}
         <MenuItem label="Add Renewal" onClick={handleAddRenewalClick} />
+        {/* <MenuItem label="Vehicle List" onClick={handleVehicleListClick} /> {/* Added Vehicle List */}
+        {/* <MenuItem label="Renewal List" onClick={handleRenewalListClick} /> Added Renewal List */} 
         <MenuItem label="Log sheet" onClick={handleLogSheetClick} />
-        <MenuItem label="Billing Log Sheet" onClick={handleBillingFormClick} /> {/* Corrected prop name */}
+        <MenuItem label="Billing Log Sheet" onClick={handleBillingFormClick} />
       </ul>
     </aside>
   );

@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Card from "../Card";
-import DriverSection from "../sections/DriverSection"; // Assuming DriverSection is in the same directory
 
 const VehicleMgt = ({
   editVehicleId,
@@ -13,10 +12,6 @@ const VehicleMgt = ({
   setShowVehicleList,
   setVehicles,
   setVehicleInfo,
-  setShowDriverForm,
-  setShowDriverList: setAppShowDriverListFromProps, // Renamed to avoid confusion
-  setDrivers,
-  setDriverInfo,
 }) => {
   const [vehicleInfoLocal, setVehicleInfoLocal] = useState({
     Vehiclenumber: "",
@@ -27,22 +22,6 @@ const VehicleMgt = ({
     FuelType: "",
     year: "",
     mileage: "",
-  });
-  const [driverInfoLocal, setDriverInfoLocal] = useState({
-    DriverName: "",
-    DriverAge: "",
-    DriverLicense: "",
-    Contact: "",
-  });
-  const [showLocalDriverForm, setShowLocalDriverForm] = useState(false);
-  const [showLocalDriverList, setShowLocalDriverList] = useState(false);
-  const [localDrivers, setLocalDrivers] = useState([]);
-  const [localDriverInfo, setLocalDriverInfo] = useState({
-    DriverName: "",
-    DriverAge: "",
-    DriverLicense: "",
-    Contact: "",
-    _id: null,
   });
 
   const fetchVehicles = useCallback(async () => {
@@ -55,20 +34,9 @@ const VehicleMgt = ({
     }
   }, [setVehicles]);
 
-  const fetchDrivers = useCallback(async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/drivers");
-      setLocalDrivers(response.data);
-    } catch (error) {
-      console.error("Error fetching drivers:", error);
-      alert("Failed to fetch drivers.");
-    }
-  }, [setLocalDrivers]);
-
   useEffect(() => {
     fetchVehicles();
-    fetchDrivers();
-  }, [fetchVehicles, fetchDrivers]);
+  }, [fetchVehicles]);
 
   useEffect(() => {
     if (editVehicleId) {
@@ -137,12 +105,11 @@ const VehicleMgt = ({
         year: "",
         mileage: "",
       });
-      setShowAddVehicleForm(false);
-      setShowVehicleList(true);
       if (setVehicleInfo) {
         setVehicleInfo({});
       }
       fetchVehicles();
+      // Do NOT setShowAddVehicleForm(false) or setShowVehicleList(true) here
     } catch (error) {
       console.error("Error adding vehicle:", error);
       if (error.response) {
@@ -170,8 +137,7 @@ const VehicleMgt = ({
       );
 
       alert("Vehicle updated successfully!");
-      setShowAddVehicleForm(false);
-      setShowVehicleList(true);
+      // Do NOT setShowAddVehicleForm(false) or setShowVehicleList(true) here
       if (setVehicleInfo) {
         setVehicleInfo({});
       }
@@ -186,79 +152,6 @@ const VehicleMgt = ({
     }
   };
 
-  const handleShowDriverForm = () => {
-    setShowLocalDriverForm(true);
-    setShowLocalDriverList(false);
-    setLocalDriverInfo({
-      DriverName: "",
-      DriverAge: "",
-      DriverLicense: "",
-      Contact: "",
-      _id: null,
-    });
-  };
-
-  const handleShowEditDriverForm = (driver) => {
-    setShowLocalDriverForm(true);
-    setLocalDrivers(false);
-    setLocalDriverInfo(driver);
-  };
-
-  const handleShowDriverList = () => {
-    setShowLocalDriverList(true);
-    setShowLocalDriverForm(false);
-  };
-
-  const handleAddDriver = async (driverData) => {
-    try {
-      const response = await axios.post("http://localhost:5000/api/drivers", driverData);
-      setLocalDrivers((prevDrivers) => [...prevDrivers, response.data]);
-      alert("Driver added successfully!");
-      setShowLocalDriverForm(false);
-      fetchDrivers();
-    } catch (error) {
-      console.error("Error adding driver:", error);
-      alert("Failed to add driver.");
-    }
-  };
-
-  const handleUpdateDriver = async (id, driverData) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/api/drivers/${id}`, driverData);
-      setLocalDrivers((prevDrivers) =>
-        prevDrivers.map((driver) => (driver._id === id ? response.data : driver))
-      );
-      alert("Driver updated successfully!");
-      setShowLocalDriverForm(false);
-      fetchDrivers();
-    } catch (error) {
-      console.error("Error updating driver:", error);
-      alert("Failed to update driver.");
-    }
-  };
-
-  const handleSaveDriver = (driverData) => {
-    if (driverData._id) {
-      handleUpdateDriver(driverData._id, driverData);
-    } else {
-      handleAddDriver(driverData);
-    }
-  };
-
-  const handleDeleteDriver = async (id) => {
-    if (window.confirm("Are you sure you want to delete this driver?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/drivers/${id}`);
-        setLocalDrivers((prevDrivers) => prevDrivers.filter((driver) => driver._id !== id));
-        alert("Driver deleted successfully!");
-        fetchDrivers();
-      } catch (error) {
-        console.error("Error deleting driver:", error);
-        alert("Failed to delete driver.");
-      }
-    }
-  };
-
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
@@ -270,9 +163,7 @@ const VehicleMgt = ({
             setShowAddVehicleForm(false);
             setShowRenewalForm(false);
             setShowRenewalVehicleList(false);
-            setShowVehicleList(true);
-            setShowLocalDriverForm(false);
-            setShowLocalDriverList(false);
+            setShowVehicleList(true); // Call the function to update the state in App.jsx
           }}
           className="bg-[#5046e4] text-white px-3 py-1 rounded hover:bg-blue transition text-sm"
         >
@@ -282,6 +173,7 @@ const VehicleMgt = ({
 
       {/* Vehicle Form */}
       <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-4 rounded-lg shadow-lg mb-8">
+        {/* Form Fields - Keep them as they are */}
         <div>
           <label className="block font-semibold mb-2 text-gray-600">
             Vehicle Number
@@ -412,39 +304,6 @@ const VehicleMgt = ({
           {editVehicleId ? "Update Vehicle" : "Add Vehicle"}
         </button>
       </form>
-
-      {/* Driver Section */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Manage Drivers</h2>
-        <div className="flex gap-4 mb-4">
-          <button
-            onClick={handleShowDriverForm}
-            className="bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue text-sm"
-          >
-            Add Driver
-          </button>
-          <button
-            onClick={handleShowDriverList}
-            className="bg-[#5046e4] text-white px-4 py-2 rounded shadow-md hover:bg-blue text-sm"
-          >
-            Driver List
-          </button>
-        </div>
-
-        <DriverSection
-          showDriverForm={showLocalDriverForm}
-          showDriverList={showLocalDriverList}
-          setShowDriverForm={setShowLocalDriverForm}
-          setShowDriverList={setShowLocalDriverList}
-          drivers={localDrivers}
-          setDrivers={setLocalDrivers}
-          driverInfo={localDriverInfo}
-          setDriverInfo={setLocalDriverInfo}
-          handleSaveDriver={handleSaveDriver}
-          handleEditDriver={handleShowEditDriverForm}
-          handleDeleteDriver={handleDeleteDriver}
-        />
-      </div>
     </div>
   );
 };

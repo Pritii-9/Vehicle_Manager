@@ -11,6 +11,7 @@ const Home = ({ renewalVehicles }) => {
   const [visitorCount, setVisitorCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [totalVehicles, setTotalVehicles] = useState(0); // New state for total vehicles
 
   useEffect(() => {
     const fetchLastBillRate = async () => {
@@ -29,7 +30,22 @@ const Home = ({ renewalVehicles }) => {
       }
     };
 
+    const fetchVehicleCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/vehicles/count");
+        if (response.ok) {
+          const data = await response.json();
+          setTotalVehicles(data.count);
+        } else {
+          console.error("Failed to fetch vehicle count");
+        }
+      } catch (error) {
+        console.error("Error fetching vehicle count:", error);
+      }
+    };
+
     fetchLastBillRate();
+    fetchVehicleCount();
     generateRandomVisitorCount();
   }, []);
 
@@ -141,7 +157,7 @@ const Home = ({ renewalVehicles }) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Left Top Card - Total */}
+      {/* Left Top Card - Total Vehicles */}
       <motion.div
         className={`${cardBaseStyles} ${getCardPositionStyles("vehicles")} ${activeCard === "vehicles" ? cardActiveStyles : ''}`}
         onClick={() => handleCardClick("vehicles")}
@@ -149,8 +165,8 @@ const Home = ({ renewalVehicles }) => {
       >
         <div className={`${getCardContentOpacity("vehicles")} flex flex-col items-center justify-center`}>
           <FaCar className="text-blue-500 text-3xl mb-1" />
-          <h3 className="text-lg font-semibold text-blue-700 mb-1">Total</h3>
-          <p className="text-3xl font-bold text-gray-800">-</p>
+          <h3 className="text-lg font-semibold text-blue-700 mb-1">Total Vehicles</h3>
+          <p className="text-3xl font-bold text-gray-800">{totalVehicles}</p>
         </div>
       </motion.div>
 

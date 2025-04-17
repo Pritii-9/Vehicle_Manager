@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const RenewalMgt = ({
-  setShowAddVehicleForm,
   setShowRenewalForm,
   setShowRenewalVehicleList,
-  setShowVehicleList
 }) => {
   const [vehicleRenewal, setVehicleRenewal] = useState({
     vehiclenumber: "",
@@ -57,10 +55,10 @@ const RenewalMgt = ({
         <h2 className="text-xl font-bold text-gray-800 mb-4">Add Vehicle Renewal</h2>
         <button
           onClick={() => {
-            setShowAddVehicleForm(false);
+            //setShowAddVehicleForm(false);
             setShowRenewalForm(false);
             setShowRenewalVehicleList(true);
-            setShowVehicleList(false);
+            //setShowVehicleList(false);
           }}
           className="bg-[#5046e4] text-white px-4 py-2 rounded hover:bg-blue transition"
         >
