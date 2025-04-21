@@ -55,7 +55,7 @@ const AddDriverForm = ({ onSave, initialDriverInfo, onCancel, onShowList }) => {
           <button
             type="button"
             onClick={onShowList}
-            className="bg-gray-300 text-gray-700 px-3 py-1 rounded shadow-md hover:bg-gray-400 text-sm"
+            className="bg-[#5046e4] text-white  px-3 py-1 rounded shadow-md hover:bg-gray-400 text-sm"
           >
             Driver List
           </button>
