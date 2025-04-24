@@ -262,7 +262,35 @@ const Card = ({
         </table>
       </div>
     );
-  } else {
+  } 
+  else if (type === "renewal") {
+    return (
+        <div className="bg-white shadow rounded-md p-4">
+            <h3 className="text-lg font-semibold mb-2">Vehicle Renewals</h3>
+            <table className="table-auto w-full border-collapse border border-gray-300 text-left">
+                <thead>
+                    <tr>
+                        <th className="px-4 py-2 border-b border-gray-300">Vehicle Number</th>
+                        <th className="px-4 py-2 border-b border-gray-300">Renewal For</th>
+                        <th className="px-4 py-2 border-b border-gray-300">Issue Date</th>
+                        <th className="px-4 py-2 border-b border-gray-300">Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map((renewal) => (
+                        <tr key={renewal._id || renewal.vehiclenumber}>
+                            <td className="px-4 py-2 border-b border-gray-300">{renewal.vehiclenumber}</td>
+                            <td className="px-4 py-2 border-b border-gray-300">{renewal.renewalfor}</td>
+                            <td className="px-4 py-2 border-b border-gray-300">{new Date(renewal.Issuedate).toLocaleDateString()}</td>
+                            <td className="px-4 py-2 border-b border-gray-300">{new Date(renewal.Expirydate).toLocaleDateString()}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+} 
+  else {
     return (
       <div className="bg-white shadow rounded-md p-4">
         <h3 className="text-lg font-semibold mb-2">Data List</h3>
