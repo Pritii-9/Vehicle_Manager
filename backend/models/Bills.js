@@ -4,7 +4,7 @@ const BillSchema = new mongoose.Schema({
   billNumber: {
     type: String,
     required: true,
-    unique: true, 
+    unique: true,
   },
   vehicleNumber: {
     type: String,
@@ -19,12 +19,18 @@ const BillSchema = new mongoose.Schema({
     required: true,
   },
   gst: {
-    type: String, 
+    type: String,
     default: '',
   },
   date: {
     type: Date,
     required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true,
   },
   createdAt: {
     type: Date,

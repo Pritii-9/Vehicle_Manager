@@ -33,6 +33,12 @@ const VehicleSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-});
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true,
+  },
+}, { timestamps: true }); // Added timestamps
 
 export default mongoose.model("Vehicle", VehicleSchema);

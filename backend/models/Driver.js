@@ -19,6 +19,12 @@ const driverSchema = new Schema({
     type: String,
     required: true,
   },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true, // For efficient querying
+  },
   // You can add more fields as needed, like createdAt, updatedAt, etc.
 }, { timestamps: true });
 

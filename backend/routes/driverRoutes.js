@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import Driver from '../models/Driver.js'; // Assuming your model file is named driver.js
 
-// GET all drivers
+
 router.get('/', async (req, res) => {
   try {
     const drivers = await Driver.find();
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET a specific driver by ID
+
 router.get('/:id', async (req, res) => {
   try {
     const driver = await Driver.findById(req.params.id);
@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST a new driver
+//  new driver
 router.post('/', async (req, res) => {
   const driver = new Driver({
     DriverName: req.body.DriverName,
@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT (update) an existing driver by ID
+//  (update) an existing driver 
 router.put('/:id', async (req, res) => {
   try {
     const driver = await Driver.findById(req.params.id);
@@ -61,7 +61,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE a driver by ID
+// DELETE a driver 
 router.delete('/:id', async (req, res) => {
   try {
     const driver = await Driver.findByIdAndDelete(req.params.id);

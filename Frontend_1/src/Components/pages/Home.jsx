@@ -1,8 +1,39 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import vectorImage from "../../assets/vehicle.jpg";
-import { motion } from "framer-motion";
-import { FaCar, FaUsers, FaMoneyBillAlt, FaTimesCircle, FaBell } from 'react-icons/fa'; // Import bell icon
+import { FaCar, FaUsers, FaMoneyBillAlt, FaTimesCircle, FaBell } from 'react-icons/fa';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // You can also log the error to an error reporting service
+    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Something went wrong.</strong>
+          <span className="block sm:inline">Sorry, there was an error loading this section.</span>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const Home = ({ renewalVehicles }) => {
   const [displayedRate, setDisplayedRate] = useState(null);
@@ -11,42 +42,42 @@ const Home = ({ renewalVehicles }) => {
   const [visitorCount, setVisitorCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [totalVehicles, setTotalVehicles] = useState(0); // New state for total vehicles
+  const [totalVehicles, setTotalVehicles] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
-    const fetchLastBillRate = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null); // Clear previous errors
       try {
-        const response = await fetch("http://localhost:5000/api/bills/latest");
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.rate) {
-            setDisplayedRate(data.rate);
-          }
-        } else {
-          console.error("Failed to fetch latest bill rate");
+        const rateResponse = await fetch("http://localhost:5000/api/bills/latest");
+        const vehicleCountResponse = await fetch("http://localhost:5000/api/vehicles/count");
+
+        if (!rateResponse.ok) {
+          throw new Error(`Failed to fetch latest bill rate: ${rateResponse.status}`);
         }
-      } catch (error) {
-        console.error("Error fetching latest bill rate:", error);
+        if (!vehicleCountResponse.ok) {
+          throw new Error(`Failed to fetch vehicle count: ${vehicleCountResponse.status}`);
+        }
+
+        const rateData = await rateResponse.json();
+        const vehicleCountData = await vehicleCountResponse.json();
+
+        if (rateData && rateData.rate) {
+          setDisplayedRate(rateData.rate);
+        }
+        setTotalVehicles(vehicleCountData.count);
+        generateRandomVisitorCount();
+      } catch (err) {
+        setError(err); // Set the error state
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchVehicleCount = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/vehicles/count");
-        if (response.ok) {
-          const data = await response.json();
-          setTotalVehicles(data.count);
-        } else {
-          console.error("Failed to fetch vehicle count");
-        }
-      } catch (error) {
-        console.error("Error fetching vehicle count:", error);
-      }
-    };
-
-    fetchLastBillRate();
-    fetchVehicleCount();
-    generateRandomVisitorCount();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -70,28 +101,26 @@ const Home = ({ renewalVehicles }) => {
           const expiryDate = new Date(renewal.Expirydate);
           if (expiryDate <= tenDaysFromNow && expiryDate >= today) {
             newExpiringVehicles.push({
-              id: renewal.vehiclenumber, // Use vehicle number as a unique ID
+              id: renewal.vehiclenumber,
               vehicleNumber: renewal.vehiclenumber,
               expiryDate: expiryDate.toLocaleDateString(),
             });
           }
         });
 
-        // Update notifications, adding new ones if they don't exist (max 4)
         setNotifications((prevNotifications) => {
           const existingIds = prevNotifications.map(n => n.id);
           const newNotifications = newExpiringVehicles.filter(n => !existingIds.includes(n.id));
-          return [...prevNotifications, ...newNotifications].slice(0, 4); // Limit to max 4
+          return [...prevNotifications, ...newNotifications].slice(0, 4);
         });
       } else {
-        setNotifications([]); // Clear notifications if no renewal data
+        setNotifications([]);
       }
     };
 
     checkExpiringVehicles();
     const intervalId = setInterval(checkExpiringVehicles, 60 * 60 * 1000);
     return () => clearInterval(intervalId);
-
   }, [renewalVehicles]);
 
   const generateRandomVisitorCount = () => {
@@ -149,6 +178,15 @@ const Home = ({ renewalVehicles }) => {
     return activeCard === cardId ? 'opacity-100' : 'opacity-80';
   };
 
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">Error: </strong>
+        <span className="block sm:inline">{error.message}</span>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="home-container flex flex-col items-center justify-center h-full relative bg-gradient-to-br from-gray-100 to-gray-200 p-8 rounded-lg shadow-md"
@@ -166,7 +204,11 @@ const Home = ({ renewalVehicles }) => {
         <div className={`${getCardContentOpacity("vehicles")} flex flex-col items-center justify-center`}>
           <FaCar className="text-blue-500 text-3xl mb-1" />
           <h3 className="text-lg font-semibold text-blue-700 mb-1">Total Vehicles</h3>
-          <p className="text-3xl font-bold text-gray-800">{totalVehicles}</p>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <p className="text-3xl font-bold text-gray-800">{totalVehicles}</p>
+          )}
         </div>
       </motion.div>
 
@@ -179,7 +221,11 @@ const Home = ({ renewalVehicles }) => {
         <div className={`${getCardContentOpacity("renewals")} flex flex-col items-center justify-center`}>
           <FaUsers className="text-orange-500 text-3xl mb-1" />
           <h3 className="text-lg font-semibold text-orange-700 mb-1">Visitor Counts</h3>
-          <p className="text-3xl font-bold text-gray-800">{visitorCount}</p>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <p className="text-3xl font-bold text-gray-800">{visitorCount}</p>
+          )}
         </div>
       </motion.div>
 
@@ -192,9 +238,13 @@ const Home = ({ renewalVehicles }) => {
         <div className={`${getCardContentOpacity("bills")} flex flex-col items-center justify-center`}>
           <FaMoneyBillAlt className="text-green-500 text-3xl mb-1" />
           <h3 className="text-sm font-semibold text-green-700 mb-1">Calculated Total</h3>
-          <p className="text-2xl font-bold text-gray-800">
-            {totalAmount !== null ? `₹${totalAmount}` : "₹0.00"}
-          </p>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <p className="text-2xl font-bold text-gray-800">
+              {totalAmount !== null ? `₹${totalAmount}` : "₹0.00"}
+            </p>
+          )}
         </div>
       </motion.div>
 
@@ -202,6 +252,7 @@ const Home = ({ renewalVehicles }) => {
         className="text-4xl font-bold mt-20 mb-8 text-purple-800 shadow-sm"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         Welcome to Vehicle Manager
@@ -290,4 +341,12 @@ const Home = ({ renewalVehicles }) => {
   );
 };
 
-export default Home;
+const WrappedHome = () => {
+    return (
+        <ErrorBoundary>
+            <Home renewalVehicles={[]}/>
+        </ErrorBoundary>
+    )
+}
+
+export default WrappedHome;

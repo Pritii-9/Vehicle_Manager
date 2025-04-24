@@ -8,10 +8,16 @@ const logSheetSchema = new mongoose.Schema({
   closingReading: Number,
   total: Number,
   driver: String,
-  dieselQuantity: Number, 
+  dieselQuantity: Number,
   dieselAmount: Number,
   remark: String,
-});
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true,
+  },
+}, { timestamps: true }); // Added timestamps for createdAt and updatedAt
 
 const LogSheet = mongoose.model("LogSheet", logSheetSchema);
 

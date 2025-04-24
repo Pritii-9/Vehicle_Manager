@@ -6,9 +6,10 @@ import dotenv from "dotenv";
 
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import renewalRoutes from "./routes/renewalRoutes.js";
-import logSheetRoutes from "./routes/logSheetRoutes.js"; 
+import logSheetRoutes from "./routes/logSheetRoutes.js";
 import billsRoutes from "./routes/bills.js";
-import driverRoutes  from "./routes/driverRoutes.js"
+import driverRoutes from "./routes/driverRoutes.js";
+import authRoutes from "./routes/auth.js"; // Import the authentication routes
 
 dotenv.config();
 
@@ -24,13 +25,14 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// API Routes
 app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/renewals", renewalRoutes); 
-app.use("/api/logsheet", logSheetRoutes); 
+app.use("/api/renewals", renewalRoutes);
+app.use("/api/logsheet", logSheetRoutes);
 app.use('/api/bills', billsRoutes);
 app.use('/api/drivers', driverRoutes);
+app.use('/api/auth', authRoutes); // Use the authentication routes under the /api/auth path
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
