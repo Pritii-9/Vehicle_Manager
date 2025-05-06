@@ -141,8 +141,8 @@ const AppContent = () => {
                 setDriverInfo={setDriverInfo}
                 setShowDriverList={setShowDriverList}
             />
-            <main className="flex-1 h-full bg-gradient-to-br from-gray-100 to-gray-200 p-6">
-                <header className="bg-gradient-to-r from-purple-800 to-purple-900 text-white p-6 shadow-lg flex items-center justify-between relative transition-all duration-300 hover:shadow-lg hover:scale-[1.01] rounded-b-lg mb-6">
+<main className="flex-1 h-full bg-gradient-to-br from-gray-100 to-gray-200 overflow-y-auto">
+<header className="bg-gradient-to-r from-purple-800 to-purple-900 text-white p-7 py-6 px-6 shadow-lg flex items-center justify-between relative transition-all duration-300 hover:shadow-lg hover:scale-[1.01] rounded-b-lg mb-6">
                     <h1 className="text-2xl font-bold">Vehicle Manager</h1>
                     <button onClick={handleLogout} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                         Logout

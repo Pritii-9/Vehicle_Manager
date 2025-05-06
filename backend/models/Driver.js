@@ -22,7 +22,7 @@ const driverSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
     index: true, // For efficient querying
   },
   // You can add more fields as needed, like createdAt, updatedAt, etc.
